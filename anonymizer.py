@@ -11,23 +11,6 @@ def quasi_list(datalist, sensitive):
         quasilist.append(quasi_row(datalist[i], sensitive))
     return quasilist
 
-def qblock_list(datalist, sensitive): # grouped by q*-block
-                                      # 使ってない，freq_listの競合
-    i = 0
-    qblock_list = list()
-    while i < len(datalist):
-        qblock_list.append(datalist[i])
-        j = i + 1
-        while j < len(datalist):
-            if (quasi_row(datalist[i], sensitive) ==
-            quasi_row(datalist[j], sensitive)):
-                qblock_list[i].append(datalist[j])
-                del datalist[j]
-            else:
-                j += 1
-        i += 1
-    return qblock_list
-
 def freq_list(datalist, sensitive): # calculate the frequency of each q*-block
                                     # 最後尾要素にfrequency
     quasilist = quasi_list(datalist, sensitive)
@@ -37,7 +20,6 @@ def freq_list(datalist, sensitive): # calculate the frequency of each q*-block
         j = i + 1
         while j < len(quasilist):
             if quasilist[i][:-1] == quasilist[j]:
-                print('yattaze', i)
                 quasilist[i][-1] += 1 # frequency increment
                 del quasilist[j]
             else:
@@ -45,9 +27,9 @@ def freq_list(datalist, sensitive): # calculate the frequency of each q*-block
         i += 1
     return quasilist
 
-def calc_k(quasilist):
-    min_k = quasilist[0][-1]
-    for li in quasilist[1:]: min_k = min(min_k, li[-1])
+def calc_k(freqlist):
+    min_k = freqlist[0][-1]
+    for li in freqlist[1:]: min_k = min(min_k, li[-1])
     return min_k
 
 def k_judge(min_k, k): return min_k >= k
@@ -65,6 +47,11 @@ if __name__ == '__main__':
     ###### frequency ######
     freq = freq_list(datalist, sensitive)
 
-    ##### #####
-    ##### #####
+    ##### calc_k #####
+    calc_k = calc_k(freq)
+    print('k-anonymity: ', calc_k)
+
+    ##### k-judge #####
+    kjudge = k_judge(calc_k, k)
+    print('k-satisfied: ', kjudge)
     ##### #####
