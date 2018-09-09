@@ -13,7 +13,7 @@ def quasi_list(datalist, sensitive):
     return quasilist
 
 def freq_list(datalist, sensitive): # calculate the frequency of each q*-block
-                                    # $B:G8eHxMWAG$K(Bfrequency
+                                    # 最後尾要素にfrequency
     quasilist = quasi_list(datalist, sensitive)
     i = 0
     while i < len(quasilist):
@@ -35,14 +35,14 @@ def calc_k(freqlist):
 
 def k_judge(min_k, k): return min_k >= k
 
-def masking(attr, value): # $B$3$l0J>e0lHL2=$G$-$J$$>l9g$O$=$N$^$^(Bvalue$B$rJV$9!%(B
+def masking(attr, value): # これ以上一般化できない場合はそのままvalueを返す．
     if attr == 'sex': return value
-    if attr == 'time': return value # $B:#2s$O(B'time'$B$,(Bsensitive$B$J$N$GIU$1>F?O%3!<%G%#%s%0(B
+    if attr == 'time': return value # 今回は'time'がsensitiveなので付け焼刃コーディング
 
     mask = value.find('*')
-    if mask == 0: return value # $B@hF,$,4{$K(B'*'$B$J$i$=$N$^$^JV$9!%(B
+    if mask == 0: return value # 先頭が既に'*'ならそのまま返す．
 
-    #### $B0J2<B0@-$4$H$N%^%9%-%s%0=hM}(B ####
+    #### 以下属性ごとのマスキング処理 ####
     if attr == 'tel':
         if mask == -1: return value[:mask] + '*'
         else: return value[:mask-1] + '*' + value[mask:]
@@ -54,7 +54,7 @@ def masking(attr, value): # $B$3$l0J>e0lHL2=$G$-$J$$>l9g$O$=$N$^$^(Bvalue$B$r
         else: return value[:mask-1] + value[mask:]
 
     elif attr == 'add0':
-        return u'$B4XEl(B'
+        return '関東'
 
     elif attr in ['add1', 'add2']:
         return '*'
