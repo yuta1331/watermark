@@ -1,6 +1,8 @@
 #!/usr/bin/env/ python
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
+
 def quasi_row(row, sensitive):
     if sensitive + 1 < len(row):
         return row[:sensitive] + row[sensitive + 1:]
@@ -27,6 +29,20 @@ def freq_list(datalist, sensitive): # calculate the frequency of each q*-block
                 j += 1
         i += 1
     return quasilist
+
+def attr_search(freqlist, data, attr_i):
+    for i, attr in enumerate(freqlist):
+        if data[attr_i] == attr[0]:
+            freqlist[i][1] += 1
+            return
+    freqlist.append([data[attr_i], 1]) # Unless objective attr is found
+    return
+
+def freq_attr_list(datalist, attr_i): # [value, freq]
+    freq_attrlist = list()
+    for data in datalist: # datalistを行ごとに読み込む
+        attr_search(freq_attrlist, data, attr_i)
+    return freq_attrlist
 
 def calc_k(freqlist):
     min_k = freqlist[0][-1]
@@ -100,10 +116,14 @@ if __name__ == '__main__':
     kjudge = k_judge(calc_k, k)
     print('k-satisfied: ', kjudge)
 
+    ##### freq_attr_list #####
+    a = freq_attr_list(datalist, attr_list.index('add0'))
+    print(a)
+
     ##### modifying #####
     n = len(datalist)
     m = len(datalist[0])
     for i in range(n):
         for j in range(m):
             datalist[i][j] = masking(attr_list[j], datalist[i][j])
-        print(datalist[i])
+        #print(datalist[i])
