@@ -4,6 +4,10 @@
 import csv
 
 def all_sorted_list(datalist, sensitive):
+    if sensitive == None:
+        for i in range(len(datalist[0]))[::-1]:
+            datalist.sort(key=lambda x:x[i])
+        return datalist
     for i in range(len(datalist[0]))[::-1]:
         if i != sensitive:
             datalist.sort(key=lambda x:x[i])
