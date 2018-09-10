@@ -64,13 +64,20 @@ def masking(attr, value): # これ以上一般化できない場合はそのま�
     #### 以下属性ごとのマスキング処理 ####
     if attr == 'tel':
         if mask == -1: return value[:mask] + '*'
+        elif mask == 1: return '***********'
         else: return value[:mask-1] + '*' + value[mask:]
 
     elif attr == 'poscode':
         dash = value.find('-')
+
+        # '*'がなければ
         if mask == -1: return value[:mask] + '*'
-        elif mask == dash + 1: return value[:dash-1] + value[dash:]
-        else: return value[:mask-1] + value[mask:]
+
+        # '*'の左が'-'なら
+        elif mask == dash + 1: return value[:dash-1] + '*' + value[dash:]
+
+        # 上記以外
+        else: return value[:mask-1] + '*' + value[mask:]
 
     elif attr == 'addr0':
         return '関東' # 今は関東のみなのでこれで
@@ -91,7 +98,7 @@ def masking(attr, value): # これ以上一般化できない場合はそのま�
     elif attr == 'birth':
         slash = value.rfind('/')
         if slash == -1:
-            if mask == -1: return value[:mask] + '*'
+            if mask == -1:return value[:mask] + '*'
             else: return value[:mask-1] + '*' + value[mask:]
         else: return value[:slash]
 
@@ -108,6 +115,14 @@ def address_masking(addr_attr, address):
 def no_secure_blocks(freq_list, k):
     return [x[:-1] for x in freq_list if x[-1] < k]
 
+# 属性ごとでkを満たしていないblockを取り出す
+def no_secure_attrs(attr_first, attr_last, datalist, k):
+    attrlist_in_datalist = list()
+    for data in datalist:
+        attrlist_in_datalist.append(data[attr_first:attr_last+1])
+    attr_freq_list = freq_list(attrlist_in_datalist, None)
+    return no_secure_blocks(attr_freq_list, k)
+
 # 住所はひとかたまりで一般化すべきなのでここでindexを得る
 def address_grouper(attr_list):
     try:
@@ -122,15 +137,9 @@ def address_grouper(attr_list):
             last = i
             return first, last
 
-def no_secure_addr_blocks(addr_first, addr_last, datalist, k):
-    addrlist_in_datalist = list()
-    for data in datalist:
-        addrlist_in_datalist.append(data[addr_first:addr_last+1])
-    addr_freq_list = freq_list(addrlist_in_datalist, None)
-    return no_secure_blocks(addr_freq_list, k)
-
-
 def datafly(datalist, attr_list, sensitive, k):
+
+    # とりあえず各属性でkを満たすようにする
 
     # まずは住所を一般化する
     addr_first, addr_last = address_grouper(attr_list)
@@ -139,19 +148,21 @@ def datafly(datalist, attr_list, sensitive, k):
         addr_first += 1
         pos_frag = 1
 
-    nosecure_addr_blocks = \
-        no_secure_addr_blocks(addr_first, addr_last, datalist, k)
+    nosecure_addrs = \
+        no_secure_attrs(addr_first, addr_last, datalist, k)
 
-    while len(nosecure_addr_blocks) > 0:
+    # poscodeは除く
+    while len(nosecure_addrs) > 0:
         for i, data in enumerate(datalist):
-            if data[addr_first:addr_last+1] in nosecure_addr_blocks:
+            if data[addr_first:addr_last+1] in nosecure_addrs:
                 tmp = address_masking(attr_list[addr_first:addr_last+1], \
                                       data[addr_first:addr_last+1])
                 datalist[i][addr_first:addr_last+1] = tmp
-        nosecure_addr_blocks = \
-            no_secure_addr_blocks(addr_first, addr_last, datalist, k)
+        nosecure_addrs = \
+            no_secure_attrs(addr_first, addr_last, datalist, k)
 
-    ''' for debug
+
+    '''# for debug
     addrlist_in_datalist = list()
     for data in datalist:
         addrlist_in_datalist.append(data[addr_first:addr_last+1])
@@ -160,6 +171,20 @@ def datafly(datalist, attr_list, sensitive, k):
     for x in addr_freq_list:
         print(x)
     '''
+
+    # 住所以外
+    range_except_addr = list(range(0, addr_first))
+    range_except_addr.extend(list(range(addr_last+1, len(attr_list))))
+    range_except_addr.remove(sensitive)
+    print(range_except_addr)
+    for attr_i in range_except_addr:
+        nosecure_attrs = no_secure_attrs(attr_i, attr_i, datalist, k)
+        while len(nosecure_attrs) > 0:
+            for i, data in enumerate(datalist):
+                if [data[attr_i]] in nosecure_attrs:
+                    datalist[i][attr_i] = masking(attr_list[attr_i], data[attr_i])
+            nosecure_attrs = no_secure_attrs(attr_i, attr_i, datalist, k)
+
 
     '''
     for attr_i in range(len(datalist[0])):
@@ -213,5 +238,6 @@ if __name__ == '__main__':
 
     ##### datafly #####
     datafly(datalist, attr_list, sensitive, k)
+    subset.all_sorted_list(datalist, sensitive)
     for data in datalist:
         print(data)
