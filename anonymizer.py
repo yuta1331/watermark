@@ -72,20 +72,20 @@ def masking(attr, value): # これ以上一般化できない場合はそのま�
         elif mask == dash + 1: return value[:dash-1] + value[dash:]
         else: return value[:mask-1] + value[mask:]
 
-    elif attr == 'add0':
+    elif attr == 'addr0':
         return '関東' # 今は関東のみなのでこれで
 
-    elif attr in ['add1', 'add2']:
+    elif attr in ['addr1', 'addr2']:
         return '*'
 
-    elif attr == 'add3':
+    elif attr == 'addr3':
         rdash = value.rfind('-')
         if rdash == -1:
             return '*'
         else:
             return value[:rdash]
 
-    elif attr == 'add4':
+    elif attr == 'addr4':
         return '*'
 
     elif attr == 'birth':
@@ -95,13 +95,13 @@ def masking(attr, value): # これ以上一般化できない場合はそのま�
             else: return value[:mask-1] + '*' + value[mask:]
         else: return value[:slash]
 
-def address_masking(add_attr, address):
+def address_masking(addr_attr, address):
 # address = ['群馬県', '安中市', '岩井', '1-17-1', 'タワー岩井31']
     try:
         i = address.index('*') - 1
     except:
         i = -1
-    address[i] = masking(add_attr[i], address[i])
+    address[i] = masking(addr_attr[i], address[i])
     return address
 
 # kを満たしていないq*-blockを取り出す
@@ -114,50 +114,50 @@ def address_grouper(attr_list):
         first = attr_list.index('poscode')
     except:
         for i in range(len(attr_list)):
-            if 'add' in attr_list[i]:
+            if 'addr' in attr_list[i]:
                 first = i
                 break
     for i in range(len(attr_list))[::-1]:
-        if 'add' in attr_list[i]:
+        if 'addr' in attr_list[i]:
             last = i
             return first, last
 
-def no_secure_add_blocks(add_first, add_last, datalist, k):
-    addlist_in_datalist = list()
+def no_secure_addr_blocks(addr_first, addr_last, datalist, k):
+    addrlist_in_datalist = list()
     for data in datalist:
-        addlist_in_datalist.append(data[add_first:add_last+1])
-    add_freq_list = freq_list(addlist_in_datalist, None)
-    return no_secure_blocks(add_freq_list, k)
+        addrlist_in_datalist.append(data[addr_first:addr_last+1])
+    addr_freq_list = freq_list(addrlist_in_datalist, None)
+    return no_secure_blocks(addr_freq_list, k)
 
 
 def datafly(datalist, attr_list, sensitive, k):
 
     # まずは住所を一般化する
-    add_first, add_last = address_grouper(attr_list)
+    addr_first, addr_last = address_grouper(attr_list)
     pos_frag = 0
-    if attr_list[add_first] == 'poscode':
-        add_first += 1
+    if attr_list[addr_first] == 'poscode':
+        addr_first += 1
         pos_frag = 1
 
-    nosecure_add_blocks = \
-        no_secure_add_blocks(add_first, add_last, datalist, k)
+    nosecure_addr_blocks = \
+        no_secure_addr_blocks(addr_first, addr_last, datalist, k)
 
-    while len(nosecure_add_blocks) > 0:
+    while len(nosecure_addr_blocks) > 0:
         for i, data in enumerate(datalist):
-            if data[add_first:add_last+1] in nosecure_add_blocks:
-                tmp = address_masking(attr_list[add_first:add_last+1], \
-                                      data[add_first:add_last+1])
-                datalist[i][add_first:add_last+1] = tmp
-        nosecure_add_blocks = \
-            no_secure_add_blocks(add_first, add_last, datalist, k)
+            if data[addr_first:addr_last+1] in nosecure_addr_blocks:
+                tmp = address_masking(attr_list[addr_first:addr_last+1], \
+                                      data[addr_first:addr_last+1])
+                datalist[i][addr_first:addr_last+1] = tmp
+        nosecure_addr_blocks = \
+            no_secure_addr_blocks(addr_first, addr_last, datalist, k)
 
     ''' for debug
-    addlist_in_datalist = list()
+    addrlist_in_datalist = list()
     for data in datalist:
-        addlist_in_datalist.append(data[add_first:add_last+1])
-    add_freq_list = freq_list(addlist_in_datalist, None)
-    subset.all_sorted_list(add_freq_list, None)
-    for x in add_freq_list:
+        addrlist_in_datalist.append(data[addr_first:addr_last+1])
+    addr_freq_list = freq_list(addrlist_in_datalist, None)
+    subset.all_sorted_list(addr_freq_list, None)
+    for x in addr_freq_list:
         print(x)
     '''
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     sensitive = 9
     k = 3
     attr_list = ['sex', 'tel',
-             'poscode', 'add0', 'add1', 'add2', 'add3', 'add4',
+             'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
              'birth', 'time'] # attributes of infile
     init_row, datalist = subset.parsed_list(infile, sensitive)
 
@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     ##### freq_attr_list #####
     '''
-    a = freq_attr_list(datalist, attr_list.index('add0'))
+    a = freq_attr_list(datalist, attr_list.index('addr0'))
     print(a)
     '''
 

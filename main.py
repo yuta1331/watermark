@@ -8,7 +8,7 @@ infile = 'original_data.csv'
 outfile = 'anonymized_data.csv'
 
 attr_list = ['sex', 'tel',
-             'poscode', 'add0', 'add1', 'add2', 'add3', 'add4',
+             'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
              'birth', 'time'] # attributes of infile
 sensitive = 9 # sensitive attribute is not modified.
 anonym = 'k-anonymity' # choose the method of anonymization
