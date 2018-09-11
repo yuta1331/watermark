@@ -180,6 +180,7 @@ def datafly(datalist, attr_list, sensitive, k):
     for attr_i in range_except_addr:
         nosecure_attrs = no_secure_attrs(attr_i, attr_i, datalist, k)
         while len(nosecure_attrs) > 0:
+            if len(nosecure_attrs) == 1: break
             for i, data in enumerate(datalist):
                 if [data[attr_i]] in nosecure_attrs:
                     datalist[i][attr_i] = masking(attr_list[attr_i], data[attr_i])
@@ -187,6 +188,8 @@ def datafly(datalist, attr_list, sensitive, k):
 
         # for debug
         freq_attrlist = freq_attr_list(datalist, attr_i)
+        for i in range(2):
+            freq_attrlist.sort(key=lambda x:x[i], reverse=True)
         for x in freq_attrlist:
             print(x)
 
