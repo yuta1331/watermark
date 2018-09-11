@@ -206,6 +206,28 @@ def datafly(datalist, attr_list, sensitive, k):
     '''
     return
 
+    # ソート後に中央値で二分割する
+    def mondrian(datalist, k, attr_i):
+        if len(datalist) < k*2: return datalist
+        else:
+            subset.all_sorted_list(datalist, None)
+            mid = len(datalist)//2
+
+            # attr_i属性をキーにして分割
+            split_val = datalist[mid][attr_i]
+
+            ihs = datalist[:mid+1]
+            rhs = list()
+
+            for data in datalist[mid+1:]:
+                if data[attr_i] == split_val:
+                    ihs.append(data)
+                else:
+                    rhs.append(data)
+
+            if len(rhs) < k: return datalist # 懸念
+            else: return mondrian(ihs, k, attr_i), mondrian(rhs, k, attr_i)
+
 
 if __name__ == '__main__':
     import subset
@@ -216,6 +238,9 @@ if __name__ == '__main__':
              'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
              'birth', 'time'] # attributes of infile
     init_row, datalist = subset.parsed_list(infile, sensitive)
+    subset.all_sorted_list(datalist, sensitive)
+    for data in datalist:
+        print(data)
 
     ###### frequency ######
     freq = freq_list(datalist, sensitive)
