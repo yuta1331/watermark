@@ -310,16 +310,18 @@ def sub_easy_anonymizer(datalist, sensitive, k, attr_list):
     n = len(datalist)
 
     # iはkづつ増えていく
-    i = k
+    i = 0
 
     result = list()
 
     while True:
         if n < i + 2*k:
-            result.extend(uniformer(datalist[i:], attr_list, sensitive))
+            dataset = uniformer(datalist[i:], attr_list, sensitive)
+            result.extend(dataset)
             break
         else:
-            result.extend(uniformer(datalist[i:i+k], attr_list, sensitive))
+            dataset = uniformer(datalist[i:i+k], attr_list, sensitive)
+            result.extend(dataset)
             i += k
     return result
 
