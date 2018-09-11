@@ -63,8 +63,9 @@ def masking(attr, value): # これ以上一般化できない場合はそのま�
 
     #### 以下属性ごとのマスキング処理 ####
     if attr == 'tel':
-        if mask == -1: return value[:mask] + '*'
-        elif mask == 1: return '***********'
+        if len(value) != 10: return value + '*'
+        elif mask == -1: return value[:mask] + '*'
+        elif mask == 1: return '**********'
         else: return value[:mask-1] + '*' + value[mask:]
 
     elif attr == 'poscode':
@@ -176,7 +177,6 @@ def datafly(datalist, attr_list, sensitive, k):
     range_except_addr = list(range(0, addr_first))
     range_except_addr.extend(list(range(addr_last+1, len(attr_list))))
     range_except_addr.remove(sensitive)
-    print(range_except_addr)
     for attr_i in range_except_addr:
         nosecure_attrs = no_secure_attrs(attr_i, attr_i, datalist, k)
         while len(nosecure_attrs) > 0:
@@ -184,6 +184,11 @@ def datafly(datalist, attr_list, sensitive, k):
                 if [data[attr_i]] in nosecure_attrs:
                     datalist[i][attr_i] = masking(attr_list[attr_i], data[attr_i])
             nosecure_attrs = no_secure_attrs(attr_i, attr_i, datalist, k)
+
+        # for debug
+        freq_attrlist = freq_attr_list(datalist, attr_i)
+        for x in freq_attrlist:
+            print(x)
 
 
     '''
