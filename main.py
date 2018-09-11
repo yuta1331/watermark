@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import subset
@@ -18,7 +18,8 @@ k = 3 # for k-anonymity
 init_row, datalist = subset.parsed_list(infile, sensitive)
 
 ########### k-anonymize ############
-
+datalist = anonymizer.easy_anonymizer(datalist, sensitive, k, attr_list)
+subset.all_sorted_list(datalist, sensitive)
 
 ########### output ############
 subset.csv_composer(init_row, datalist, sensitive, outfile)
