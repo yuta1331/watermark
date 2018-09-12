@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from copy import deepcopy
+import subset
 
 def quasi_row(row, sensitive):
     if sensitive + 1 < len(row):
@@ -168,7 +169,7 @@ def datafly(datalist, attr_list, sensitive, k):
     for data in datalist:
         addrlist_in_datalist.append(data[addr_first:addr_last+1])
     addr_freq_list = freq_list(addrlist_in_datalist, None)
-    subset.all_sorted_list(addr_freq_list, None)
+    subset.all_sorted_list(addr_freq_list, None, None)
     for x in addr_freq_list:
         print(x)
     '''
@@ -190,8 +191,6 @@ def datafly(datalist, attr_list, sensitive, k):
         freq_attrlist = freq_attr_list(datalist, attr_i)
         for i in range(2):
             freq_attrlist.sort(key=lambda x:x[i], reverse=True)
-        for x in freq_attrlist:
-            print(x)
 
 
     '''
@@ -205,6 +204,138 @@ def datafly(datalist, attr_list, sensitive, k):
                             masking(attr_list[attr_i], datalist[j][attr_i])
     '''
     return
+
+    # ソート後に中央値で二分割する
+    def mondrian(datalist, k, attr_i):
+        if len(datalist) < k*2: return datalist
+        else:
+            subset.all_sorted_list(datalist, None, None)
+            mid = len(datalist)//2
+
+            # attr_i属性をキーにして分割
+            split_val = datalist[mid][attr_i]
+
+            ihs = datalist[:mid+1]
+            rhs = list()
+
+            for data in datalist[mid+1:]:
+                if data[attr_i] == split_val:
+                    ihs.append(data)
+                else:
+                    rhs.append(data)
+
+            if len(rhs) < k: return datalist # 懸念
+            else: return mondrian(ihs, k, attr_i), mondrian(rhs, k, attr_i)
+
+def same_judge_addr(addresses, n):
+    # if values are all the same, allsame = 1
+    for i in range(n-1):
+        if addresses[i] != addresses[i+1]:
+            return 0
+    return 1
+
+def same_judge_attr(datalist, attr_i, n):
+    # if values are all the same, allsame = 1
+    for i in range(n-1):
+        if datalist[i][attr_i] != datalist[i+1][attr_i]:
+            return 0
+    return 1
+
+def uniformer(datalist, attr_list, sensitive):
+    # まずは住所
+    addr_first, addr_last = address_grouper(attr_list)
+    if attr_list[addr_first] == 'poscode':
+        addr_first += 1
+
+    n = len(datalist)
+
+    # poscodeは除く
+
+    # addressesを編集後，datalistに戻すよ
+    addresses = list()
+    for data in datalist:
+        addresses.append(data[addr_first:addr_last+1])
+
+    while same_judge_addr(addresses, n) == 0:
+
+        # index_gather[i] = unmasked_index
+        index_gather = [0 for i in range(n)]
+        for i, address in enumerate(addresses):
+            try:
+                index_gather[i] = address.index('*') - 1
+            except:
+                index_gather[i] = len(address) - 1
+
+        # 住所において最も一般化の進んだ一般化度合を取り出す
+        min_index = len(address)
+        for x in index_gather:
+            min_index = min(min_index, x)
+
+        # 揃えていく
+        same_flag = 0
+        for i, address in enumerate(addresses):
+            unmasked = index_gather[i]
+            if unmasked > min_index:
+                addresses[i][unmasked] = \
+                    masking(attr_list[addr_first + unmasked], \
+                            address[unmasked])
+                same_flag += 1
+
+        # 一般化度合が同じ場合
+        if same_flag == 0:
+            for i, address in enumerate(addresses):
+                addresses[i][unmasked] = \
+                    masking(attr_list[addr_first+unmasked], address[unmasked])
+
+    # addressesをdatalistに戻すよ
+    for i, address in enumerate(addresses):
+        datalist[i][addr_first:addr_last+1] = address
+
+    # 住所以外
+    range_except_addr = list(range(0, addr_first))
+    range_except_addr.extend(list(range(addr_last+1, len(attr_list))))
+    range_except_addr.remove(sensitive)
+    for attr_i in range_except_addr:
+        attr = attr_list[attr_i]
+        while same_judge_attr(datalist, attr_i, n) == 0:
+            for i, data in enumerate(datalist):
+                datalist[i][attr_i] = masking(attr, data[attr_i])
+
+    return datalist
+
+
+# 男女は最初に分けたほうが良い
+def sub_easy_anonymizer(datalist, sensitive, k, attr_list):
+
+    n = len(datalist)
+
+    # iはkづつ増えていく
+    i = 0
+
+    result = list()
+
+    while True:
+        if n < i + 2*k:
+            dataset = uniformer(datalist[i:], attr_list, sensitive)
+            result.extend(dataset)
+            break
+        else:
+            dataset = uniformer(datalist[i:i+k], attr_list, sensitive)
+            result.extend(dataset)
+            i += k
+    return result
+
+def easy_anonymizer(datalist, sensitive, k, attr_list, priority):
+    n = len(datalist)
+    subset.all_sorted_list(datalist, None, priority)
+
+    # 女の最後を得る
+    for i, data in enumerate(datalist):
+        if data[0] == '男': break
+
+    result = sub_easy_anonymizer(datalist[:i], sensitive, k, attr_list)
+    result.extend(sub_easy_anonymizer(datalist[i:], sensitive, k, attr_list))
+    return result
 
 
 if __name__ == '__main__':
@@ -245,7 +376,16 @@ if __name__ == '__main__':
     '''
 
     ##### datafly #####
+    '''
     datafly(datalist, attr_list, sensitive, k)
-    subset.all_sorted_list(datalist, sensitive)
+    subset.all_sorted_list(datalist, sensitive, None)
+    for data in datalist:
+        print(data)
+    '''
+
+    ##### easy_anonymizer #####
+    for i, data in enumerate(datalist):
+        if data[0] == '男': break
+    datalist = uniformer(datalist[i:], attr_list, sensitive)
     for data in datalist:
         print(data)
