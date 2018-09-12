@@ -169,7 +169,7 @@ def datafly(datalist, attr_list, sensitive, k):
     for data in datalist:
         addrlist_in_datalist.append(data[addr_first:addr_last+1])
     addr_freq_list = freq_list(addrlist_in_datalist, None)
-    subset.all_sorted_list(addr_freq_list, None)
+    subset.all_sorted_list(addr_freq_list, None, None)
     for x in addr_freq_list:
         print(x)
     '''
@@ -209,7 +209,7 @@ def datafly(datalist, attr_list, sensitive, k):
     def mondrian(datalist, k, attr_i):
         if len(datalist) < k*2: return datalist
         else:
-            subset.all_sorted_list(datalist, None)
+            subset.all_sorted_list(datalist, None, None)
             mid = len(datalist)//2
 
             # attr_i属性をキーにして分割
@@ -325,9 +325,9 @@ def sub_easy_anonymizer(datalist, sensitive, k, attr_list):
             i += k
     return result
 
-def easy_anonymizer(datalist, sensitive, k, attr_list):
+def easy_anonymizer(datalist, sensitive, k, attr_list, priority):
     n = len(datalist)
-    subset.all_sorted_list(datalist, None)
+    subset.all_sorted_list(datalist, None, priority)
 
     # 女の最後を得る
     for i, data in enumerate(datalist):
@@ -378,7 +378,7 @@ if __name__ == '__main__':
     ##### datafly #####
     '''
     datafly(datalist, attr_list, sensitive, k)
-    subset.all_sorted_list(datalist, sensitive)
+    subset.all_sorted_list(datalist, sensitive, None)
     for data in datalist:
         print(data)
     '''
