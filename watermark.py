@@ -20,16 +20,16 @@ def address_grouper(attr_list):
             last = i
             return first, last
 
-def watermarker(datalist, group_by, water_bin, attr_list):
-    datalist = subset.sorted_list(datalist, group_by)
+def watermarker(dataset, group_by, water_bin, attr_list):
+    dataset = subset.sorted_list(dataset, group_by)
 
     # グループごとに埋め込み
     tmp_group_key = list()
-    for data in datalist:
+    for record in dataset:
         if len(water_bin) == 0:
             break
 
-        data_key = [data[i] for i in group_by]
+        data_key = [record[i] for i in group_by]
 
         # 今はグループに1つだけ編集
         # 住所のみ
@@ -41,7 +41,7 @@ def watermarker(datalist, group_by, water_bin, attr_list):
             # 住所を取り出す
             # 住所はまとめてくっつける
             addr_first, addr_last = address_grouper(attr_list)
-            address = ''.join(data[addr_first:addr_last+1])
+            address = ''.join(record[addr_first:addr_last+1])
             address = re.sub(r'\*+', '', address)
 
             # modifying
@@ -49,6 +49,6 @@ def watermarker(datalist, group_by, water_bin, attr_list):
             # formatting
             # address
 
-            # datalist[i][addr_first:addr_last+1] = address
+            # dataset[i][addr_first:addr_last+1] = address
 
     return
