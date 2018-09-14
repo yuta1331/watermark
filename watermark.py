@@ -5,7 +5,7 @@ import re
 
 import subset
 
-def address_grouper(attr_list):
+def addr_grouper(attr_list):
     n = len(attr_list)
 
     try:
@@ -20,35 +20,86 @@ def address_grouper(attr_list):
             last = i
             return first, last
 
+def joined_addr(first, last, record):
+    addr = ''.join(record[first:last+1])
+    return re.sub(r'\*+', '', addr)
+
 def watermarker(dataset, group_by, water_bin, attr_list):
     dataset = subset.sorted_list(dataset, group_by)
 
     # グループごとに埋め込み
     tmp_group_key = list()
     for record in dataset:
-        if len(water_bin) == 0:
+        if not water_bin:
             break
 
         data_key = [record[i] for i in group_by]
 
         # 今はグループに1つだけ編集
         # 住所のみ
-        if len(tmp_group_key) == 0 or tmp_group_key != data_key:
+        if (not tmp_group_key) or (tmp_group_key != data_key):
             tmp_group_key = data_key
             embeded_bin = water_bin[:2]
             water_bin = water_bin[2:]
 
             # 住所を取り出す
-            # 住所はまとめてくっつける
-            addr_first, addr_last = address_grouper(attr_list)
-            address = ''.join(record[addr_first:addr_last+1])
-            address = re.sub(r'\*+', '', address)
+            addr_first, addr_last = addr_grouper(attr_list)
+            # 住所はまとめてくっつける(*なし)
+            addr = joined_addr(addr_first, addr_last, record)
+            print(embeded_bin, ' ', addr)
 
             # modifying
 
             # formatting
-            # address
+            # addr
 
-            # dataset[i][addr_first:addr_last+1] = address
+            # dataset[i][addr_first:addr_last+1] = addr
 
     return
+
+def detector(origin_set, modified_set, group_by, attr_list, water_len):
+    detected_bin = ''
+
+    origin_set = subset.sorted_list(origin_set, group_by)
+    modified_set = subset.sorted_list(modified_set, group_by)
+
+    # 住所のみに埋め込まれている
+    addr_first, addr_last = addr_grouper(attr_list)
+
+    target_group_key = list()
+    target_origin_addrs = list()
+    for origin_rec in origin_set:
+        if water_len == 256:
+            break
+
+        # group_keyが等しいaddrを集める
+        # tmpはorigin_recにおける値を指す
+
+        tmp_origin_key = [origin_rec for i in group_by]
+
+        if not target_group_key:
+            target_group_key = tmp_origin_key
+            target_origin_addrs = [origin_rec[addr_first:addr_last+1]]
+            continue
+
+        if target_group_key == tmp_origin_key:
+            target_origin_addrs.append(origin_rec[addr_first:addr_last+1])
+        else:
+            for mod_rec in modified_set:
+                tmp_mod_key = [mod_rec for i in group_by]
+
+                if tmp_mod_key == target_group_key:
+                    tmp_mod_addr = mod_rec[addr_first:addr_last+1]
+                    for i, origin_addr in enumerate(target_origin_addrs):
+                        if tmp_mod_addr == origin_addr:
+                            del target_origin_addrs[i]
+                            break
+                    else: # 埋め込まれた可能性有
+                        a = 0
+                        # tmp_mod_addrとtarget_origin_addrs[0]との比較
+                    break
+
+            target_group_key = tmp_origin_key
+            target_origin_addrs = [origin_rec[addr_first:addr_last+1]]
+
+    return detected_bin
