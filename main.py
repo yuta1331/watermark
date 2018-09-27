@@ -12,6 +12,8 @@ import collections
 infile = '../Anonymizer/anonymized_data.csv'
 outfile = 'watermarked_data.csv'
 
+embedding_vec = '../practice/neologd.vec'
+
 attr_list = ['sex', 'tel',
              'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
              'birth', 'time'] # attributes of infile
@@ -30,7 +32,7 @@ init_row, dataset = subset.parsed_list(infile)
 group_by = [attr_list.index(attr) for attr in group_by_attr]
 
 ########### watermark ############
-watermark.watermarker(dataset, group_by, water_bin, attr_list)
+watermark.watermarker(dataset, group_by, water_bin, attr_list, embedding_vec)
 
 ########### check ############
 
@@ -54,12 +56,13 @@ for record in dataset:
 
             tmp_list.append(1)
             group_collection.append(tmp_list)
-
+'''
 print('#### group_collection ####')
 for group in group_collection:
     print(group)
 print('num_of_group:  ', len(group_collection))
 print('minimun group: ', min(nums_of_each_group))
+'''
 
 ########### output ############
 subset.csv_composer(init_row, dataset, outfile)

@@ -12,6 +12,8 @@ import collections
 origin_file = '../Anonymizer/anonymized_data.csv'
 modified_file = 'watermarked_data.csv'
 
+embedding_vec = '../practice/neologd.vec'
+
 attr_list = ['sex', 'tel',
              'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
              'birth', 'time'] # attributes of infile
@@ -28,7 +30,7 @@ init_row, modified_set = subset.parsed_list(modified_file)
 group_by = [attr_list.index(attr) for attr in group_by_attr]
 
 ########### detection ############
-detected_bin = detector(origin_set, modified_set,
-                        group_by, attr_list, water_len)
+detected_bin = detector(origin_set, modified_set, group_by,
+                        attr_list, water_len, embedding_vec)
 
 print(detected_bin)

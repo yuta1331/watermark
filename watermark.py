@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import gensim # word2vec利用時
 
 import subset
 
@@ -24,7 +25,9 @@ def joined_addr(first, last, record):
     addr = ''.join(record[first:last+1])
     return re.sub(r'\*+', '', addr)
 
-def watermarker(dataset, group_by, water_bin, attr_list):
+def watermarker(dataset, group_by, water_bin, attr_list, embedding_vec):
+    model = gensim.models.KeyedVectors.load_word2vec_format(embedding_vec,
+                                                            binary=False)
     dataset = subset.sorted_list(dataset, group_by)
 
     # グループごとに埋め込み
@@ -46,9 +49,14 @@ def watermarker(dataset, group_by, water_bin, attr_list):
             addr_first, addr_last = addr_grouper(attr_list)
             # 住所はまとめてくっつける(*なし)
             addr = joined_addr(addr_first, addr_last, record)
-            print(embeded_bin, ' ', addr)
+            # print(embeded_bin, ' ', addr)
 
             # modifying
+            try:
+                addr = model.most_similar(positive=[addr])[int(embeded_bin, 2)][0]
+                print(addr)
+            except:
+                water_bin = embeded_bin + water_bin
 
             # formatting
             # addr
@@ -57,7 +65,7 @@ def watermarker(dataset, group_by, water_bin, attr_list):
 
     return
 
-def detector(origin_set, modified_set, group_by, attr_list, water_len):
+def detector(origin_set, modified_set, group_by, attr_list, water_len, embedding_vec):
     detected_bin = ''
 
     origin_set = subset.sorted_list(origin_set, group_by)
