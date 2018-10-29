@@ -13,15 +13,17 @@ def AddrtoLocate(address):
     result = requests.get(url, params=payload)
     resultdict = xmltodict.parse(result.text)
     resultlocate = resultdict["result"]["coordinate"]
-    return resultlocate["lat"], resultlocate["lng"]
+    lat = float(resultlocate["lat"])
+    lng = float(resultlocate["lng"])
+    return lat, lng
 
 
 def distance(locate1, locate2):
     # 緯度経度をラジアンに変換
-    rlat1 = radians(float(locate1[0]))
-    rlng1 = radians(float(locate1[1]))
-    rlat2 = radians(float(locate2[0]))
-    rlng2 = radians(float(locate2[1]))
+    rlat1 = radians(locate1[0])
+    rlng1 = radians(locate1[1])
+    rlat2 = radians(locate2[0])
+    rlng2 = radians(locate2[1])
     
     # 緯度差と経度差
     rlat_diff = rlat1 - rlat2
@@ -60,9 +62,8 @@ def distance(locate1, locate2):
     distance = sqrt(pow(t1, 2) + pow(t2, 2))
     return distance / 1000
 
-if __name__ == '__main__':
-    locate1 = AddrtoLocate("東京都")
-    print(locate1)
-    locate2 = AddrtoLocate("埼玉県")
-    print(locate2)
-    print(distance(locate1, locate2))
+locate1 = AddrtoLocate("東京都")
+print(locate1)
+locate2 = AddrtoLocate("埼玉県")
+print(locate2)
+print(distance(locate1, locate2))
