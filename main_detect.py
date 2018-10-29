@@ -1,7 +1,7 @@
 #! usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import subset
+import api
 from watermark import detector
 
 import collections
@@ -24,8 +24,8 @@ group_by_attr = ['time', 'sex']
 water_len = 256
 
 ########### initial ############
-init_row, origin_set = subset.parsed_list(origin_file)
-init_row, modified_set = subset.parsed_list(modified_file)
+init_row, origin_set = api.parsed_list(origin_file)
+init_row, modified_set = api.parsed_list(modified_file)
 
 group_by = [attr_list.index(attr) for attr in group_by_attr]
 

@@ -1,7 +1,7 @@
 #! usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import subset
+import api
 import watermark
 
 import collections
@@ -28,7 +28,7 @@ water_bin = ''.join([random.choice('01') for i in range(water_len)])
 print(water_bin)
 
 ########### initial ############
-init_row, dataset = subset.parsed_list(infile)
+init_row, dataset = api.parsed_list(infile)
 group_by = [attr_list.index(attr) for attr in group_by_attr]
 
 ########### watermark ############
@@ -65,4 +65,4 @@ print('minimun group: ', min(nums_of_each_group))
 '''
 
 ########### output ############
-subset.csv_composer(init_row, dataset, outfile)
+api.csv_composer(init_row, dataset, outfile)
