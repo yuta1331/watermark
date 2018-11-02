@@ -8,30 +8,32 @@ import random
 
 ########### config ############
 
-infile = '../Anonymizer/anonymized_data.csv'
-outfile = 'watermarked_data.csv'
+INFILE = '../Anonymizer/anonymized_data.csv'
+OUTFILE = 'watermarked_data.csv'
 
-method = 'geo'
-embedding_vec = '../practice/neologd.vec'
+# METHOD = 'embedding'
+METHOD = 'geo'
 
-attr_list = ['sex', 'tel',
+ATTR_LIST = ['sex', 'tel',
              'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
-             'birth', 'time']  # attributes of infile
+             'birth', 'time']  # attributes of INFILE
 
-sensitive = 9
-group_by_attr = ['time', 'sex']
+SENSITIVE = 9
+GROUP_BY_ATTR = ['time', 'sex']  # これを元にグループ化
 
 # 今はrandomな2進数を生成
-water_len = 256
-water_bin = ''.join([random.choice('01') for i in range(water_len)])
+WATER_LEN = 256
+water_bin = ''.join([random.choice('01') for i in range(WATER_LEN)])
 print(water_bin)
 
 ########### initial ############
-csv_header, dataset = api.parsed_list(infile, True)
-group_by = [attr_list.index(attr) for attr in group_by_attr]
+csv_header, dataset = api.parsed_list(INFILE, True)
+
+# GROUP_BY_ATTRの番地
+group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
 ########### watermark ############
-watermark.watermarker(dataset, group_by, water_bin, attr_list, method)
+watermark.watermarker(dataset, group_by, water_bin, ATTR_LIST, METHOD)
 
 ########### check ############
 
@@ -64,4 +66,4 @@ print('minimun group: ', min(nums_of_each_group))
 '''
 
 ########### output ############
-api.csv_composer(csv_header, dataset, outfile)
+api.csv_composer(csv_header, dataset, OUTFILE)

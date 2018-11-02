@@ -17,8 +17,8 @@ import copy
 
 # in-out file parameter
 addr_file = 'addr.csv'
-addr2format_pkl = '../addr2format.pkl'
-addr2geo_pkl = '../addr2geo.pkl'
+addr2format_pkl = '../pickles/addr2format.pkl'
+addr2geo_pkl = '../pickles/addr2geo.pkl'
 
 # regular expression parameter
 re_gunshi = re.compile(r'.+[郡市]')

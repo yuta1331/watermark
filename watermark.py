@@ -2,9 +2,18 @@
 # -*- coding: utf-8 -*-
 
 import re
-import gensim # word2vec利用時
-
+# import gensim  # word2vec利用時
 import subset
+
+
+########## parameter ##########
+
+EMBEDDING_VEC = '../practice/neologd.vec'
+
+ADDR2FORMAT_PKL = 'pickles/addr2format.pkl'
+ADDR2GEO_PKL = 'pickles/addr2geo.pkl'
+
+########## method ###########
 
 def addr_range_catcher(attr_list):
     n = len(attr_list)
@@ -25,47 +34,51 @@ def joined_addr(first, last, record):
     addr = ''.join(record[first:last+1])
     return re.sub(r'\*+', '', addr)
 
-def watermarker(dataset, group_by, water_bin, attr_list, embedding_vec):
-    model = gensim.models.KeyedVectors.load_word2vec_format(embedding_vec,
-                                                            binary=False)
-    dataset = subset.sorted_list(dataset, group_by)
+def watermarker(dataset, group_by, water_bin, attr_list, method):
+    if method == 'embedding':
+        model = gensim.models.KeyedVectors.load_word2vec_format(EMBEDDING_VEC,
+                                                                binary=False)
+        dataset = subset.sorted_list(dataset, group_by)
 
-    # グループごとに埋め込み
-    tmp_group_key = list()
-    for record in dataset:
-        if not water_bin:
-            break
+        # グループごとに埋め込み
+        tmp_group_key = list()
+        for record in dataset:
+            if not water_bin:
+                break
 
-        data_key = [record[i] for i in group_by]
+            data_key = [record[i] for i in group_by]
 
-        # 今はグループに1つだけ編集
-        # 住所のみ
-        if (not tmp_group_key) or (tmp_group_key != data_key):
-            tmp_group_key = data_key
-            embeded_bin = water_bin[:2]
-            water_bin = water_bin[2:]
+            # 今はグループに1つだけ編集
+            # 住所のみ
+            if (not tmp_group_key) or (tmp_group_key != data_key):
+                tmp_group_key = data_key
+                embeded_bin = water_bin[:2]
+                water_bin = water_bin[2:]
 
-            # 住所を取り出す
-            addr_first, addr_last = addr_range_catcher(attr_list)
-            # 住所はまとめてくっつける(*なし)
-            addr = joined_addr(addr_first, addr_last, record)
-            # print(embeded_bin, ' ', addr)
+                # 住所を取り出す
+                addr_first, addr_last = addr_range_catcher(attr_list)
+                # 住所はまとめてくっつける(*なし)
+                addr = joined_addr(addr_first, addr_last, record)
+                # print(embeded_bin, ' ', addr)
 
-            # modifying
-            try:
-                addr = model.most_similar(positive=[addr])[int(embeded_bin, 2)][0]
-                print(addr)
-            except:
-                water_bin = embeded_bin + water_bin
+                # modifying
+                try:
+                    addr = model.most_similar(positive=[addr])[int(embeded_bin, 2)][0]
+                    print(addr)
+                except:
+                    water_bin = embeded_bin + water_bin
 
-            # formatting
-            # addr
+                # formatting
+                # addr
 
-            # dataset[i][addr_first:addr_last+1] = addr
+                # dataset[i][addr_first:addr_last+1] = addr
+        return
 
-    return
+    elif method == 'geo':
+        
+        return
 
-def detector(origin_set, modified_set, group_by, attr_list, water_len, embedding_vec):
+def detector(origin_set, modified_set, group_by, attr_list, water_len, EMBEDDING_VEC):
     detected_bin = ''
 
     origin_set = subset.sorted_list(origin_set, group_by)
