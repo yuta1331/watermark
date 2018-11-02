@@ -8,7 +8,7 @@ import random
 
 ########### config ############
 
-INFILE = '../Anonymizer/anonymized_data.csv'
+INFILE = 'anonymized_data.csv'
 OUTFILE = 'watermarked_data.csv'
 
 # METHOD = 'embedding'
@@ -57,13 +57,11 @@ for record in dataset:
 
             tmp_list.append(1)
             group_collection.append(tmp_list)
-'''
 print('#### group_collection ####')
 for group in group_collection:
     print(group)
 print('num_of_group:  ', len(group_collection))
 print('minimun group: ', min(nums_of_each_group))
-'''
 
 ########### output ############
 api.csv_composer(csv_header, dataset, OUTFILE)

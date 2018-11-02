@@ -15,6 +15,8 @@ EMBEDDING_VEC = '../practice/neologd.vec'
 ADDR2FORMAT_PKL = 'pickles/addr2format.pkl'
 ADDR2GEO_PKL = 'pickles/addr2geo.pkl'
 
+BIT_LEN = 2
+
 ########## method ###########
 
 def addr_range_catcher(attr_list):
@@ -40,7 +42,7 @@ def geo_distance(geo1, geo2):
     return math.sqrt((geo1[0] - geo2[0]) ** 2 +
                      (geo1[1] - geo2[1]) ** 2)
 
-def closest_addrs(listed_addr, num_cand, addr2formats, addr2geos):
+def closest_addrs(listed_addr, num_cand, addr2formats, addr2geos, distance = False):
     # existed_addr_num: listed_addrにおける*でない値の個数
     # ['東京都', '渋谷区', '*', '*']なら2
     # closestの候補は最終的に、existed_addr_numを揃えたいが
@@ -86,7 +88,9 @@ def closest_addrs(listed_addr, num_cand, addr2formats, addr2geos):
                     closest_addrs[_ii] = _addr
                     break
 
-    return closest_addrs, closest_distances
+    if distance == True:
+        return closest_addrs, closest_distances
+    return closest_addrs
 
 
 
@@ -109,22 +113,22 @@ def watermarker(dataset, group_by, water_bin, attr_list, method):
             # 住所のみ
             if (not tmp_group_key) or (tmp_group_key != data_key):
                 tmp_group_key = data_key
-                embeded_bin = water_bin[:2]
+                embedded_bin = water_bin[:2]
                 water_bin = water_bin[2:]
 
                 # 住所を取り出す
                 addr_first, addr_last = addr_range_catcher(attr_list)
                 # 住所はまとめてくっつける(*なし)
                 addr = joined_addr(addr_first, addr_last, record)
-                # print(embeded_bin, ' ', addr)
+                # print(embedded_bin, ' ', addr)
 
                 # modifying
                 try:
                     addr = model.most_similar(positive=[addr])\
-                                            [int(embeded_bin, 2)][0]
+                                            [int(embedded_bin, 2)][0]
                     print(addr)
                 except:
-                    water_bin = embeded_bin + water_bin
+                    water_bin = embedded_bin + water_bin
 
                 # formatting
                 # addr
@@ -138,7 +142,45 @@ def watermarker(dataset, group_by, water_bin, attr_list, method):
         with open(ADDR2GEO_PKL, 'rb') as f:
             addr2geos = pickle.load(f)
 
+        # グループごとに埋め込み
+        tmp_group_key = list()
+        for i_data, record in enumerate(dataset):
+            if not water_bin:
+                break
 
+            data_key = [record[i] for i in group_by]
+
+            # 今はグループに1つだけ編集
+            # 住所のみ
+            if (not tmp_group_key) or (tmp_group_key != data_key):
+                tmp_group_key = data_key
+
+                embedded_bin = water_bin[:BIT_LEN]
+                water_bin = water_bin[BIT_LEN:]
+
+                # 住所を取り出す
+                addr_first, addr_last = addr_range_catcher(attr_list)
+
+                # 住所はまとめてくっつける（*なし）
+                addr = joined_addr(addr_first, addr_last, record)
+                # print(embedded_bin, ' ', addr)
+
+                # modifying
+                try:
+                    num_cand = 2**BIT_LEN
+                    addr = closest_addrs(record[addr_first:addr_first+1],
+                                         num_cand, addr2formats, addr2geos)\
+                                         [int(embedded_bin, 2)]
+                except:
+                    water_bin = embedded_bin + water_bin
+
+                # formatting
+                addr = addr2formats[addr]
+                addr.append('*')  # pickleのformatは'*'が1つ少ない
+
+                dataset[i_data][addr_first:addr_last+1] = addr
+                # print(dataset[i_data])
+                # print(len(dataset[i_data]))
         return
 
 def detector(origin_set, modified_set, group_by,
