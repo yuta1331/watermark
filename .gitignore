@@ -4,3 +4,6 @@ __pycache__/*
 *.swp
 *.pyc
 .python-version
+*.vec
+*.bin
+*.pkl
