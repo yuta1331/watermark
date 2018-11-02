@@ -13,7 +13,7 @@ def sorted_list(dataset, priority):
 
 
 ############ API ##############
-def parsed_list(infile):
+def parsed_list(infile, header=False):
     try:
         dataset = list()
         with open(infile, 'r') as csvfile:
@@ -26,9 +26,12 @@ def parsed_list(infile):
         print(e)
     except csv.Error as e:
         print(e)
-    init = dataset[0]
-    dataset = dataset[1:]
-    return init, dataset
+
+    if header:
+        csv_header = dataset[0]
+        dataset = dataset[1:]
+        return csv_header, dataset
+    return dataset
 
 def csv_composer(init_row, outlist, outfile):
     # outlist = sorted_list(outlist, None)

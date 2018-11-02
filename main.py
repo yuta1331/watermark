@@ -28,7 +28,7 @@ water_bin = ''.join([random.choice('01') for i in range(water_len)])
 print(water_bin)
 
 ########### initial ############
-init_row, dataset = api.parsed_list(infile)
+csv_header, dataset = api.parsed_list(infile, True)
 group_by = [attr_list.index(attr) for attr in group_by_attr]
 
 ########### watermark ############
@@ -65,4 +65,4 @@ print('minimun group: ', min(nums_of_each_group))
 '''
 
 ########### output ############
-api.csv_composer(init_row, dataset, outfile)
+api.csv_composer(csv_header, dataset, outfile)
