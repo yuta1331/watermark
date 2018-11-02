@@ -6,7 +6,7 @@ import gensim # word2vec利用時
 
 import subset
 
-def addr_grouper(attr_list):
+def addr_range_catcher(attr_list):
     n = len(attr_list)
 
     try:
@@ -46,7 +46,7 @@ def watermarker(dataset, group_by, water_bin, attr_list, embedding_vec):
             water_bin = water_bin[2:]
 
             # 住所を取り出す
-            addr_first, addr_last = addr_grouper(attr_list)
+            addr_first, addr_last = addr_range_catcher(attr_list)
             # 住所はまとめてくっつける(*なし)
             addr = joined_addr(addr_first, addr_last, record)
             # print(embeded_bin, ' ', addr)
@@ -72,7 +72,7 @@ def detector(origin_set, modified_set, group_by, attr_list, water_len, embedding
     modified_set = subset.sorted_list(modified_set, group_by)
 
     # 住所のみに埋め込まれている
-    addr_first, addr_last = addr_grouper(attr_list)
+    addr_first, addr_last = addr_range_catcher(attr_list)
 
     target_group_key = list()
     target_origin_addrs = list()
