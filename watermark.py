@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import re
+import pickle
+import math
 # import gensim  # word2vec利用時
 import subset
 
@@ -34,6 +36,61 @@ def joined_addr(first, last, record):
     addr = ''.join(record[first:last+1])
     return re.sub(r'\*+', '', addr)
 
+def geo_distance(geo1, geo2):
+    return math.sqrt((geo1[0] - geo2[0]) ** 2 +
+                     (geo1[1] - geo2[1]) ** 2)
+
+def closest_addrs(listed_addr, num_cand, addr2formats, addr2geos):
+    # existed_addr_num: listed_addrにおける*でない値の個数
+    # ['東京都', '渋谷区', '*', '*']なら2
+    # closestの候補は最終的に、existed_addr_numを揃えたいが
+    # 今はまだ書けていない。
+    for i, _chunk in enumerate(listed_addr):
+        if _chunk == '*':
+            existed_addr_num = i
+            break
+    else:
+        existed_addr_num = len(listed_addr)
+
+
+    addr = ''.join(listed_addr).strip('*')
+    geo = addr2geos[addr]
+
+    closest_addrs = list()
+    closest_distances = list()
+
+    for _i, _addr in enumerate(addr2geos.keys()):
+        _d = geo_distance(geo, addr2geos[_addr])
+
+        # num_candに満たない場合はlistが溜まり切っていないので別処理
+        if _i < num_cand:
+            closest_addrs.append(_addr)
+            closest_distances.append(_d)
+            for i in range(_i):
+                for j in range(1, _i + 1 - i):
+                    if closest_distances[j - 1] > closest_distances[j]:
+                        closest_distances[j - 1], closest_distances[j] =\
+                                closest_distances[j], closest_distances[j - 1]
+
+                        closest_addrs[j - 1], closest_addrs[j] =\
+                                closest_addrs[j], closest_addrs[j - 1]
+
+        else:
+            # _ddはリスト済みの値たち
+            for _ii, _dd in enumerate(closest_distances):
+                if _dd > _d:
+                    for i in range(_ii + 1, num_cand)[::-1]:
+                        closest_distances[i] = closest_distances[i - 1]
+                        closest_addrs[i] = closest_addrs[i - 1]
+                    closest_distances[_ii] = _d
+                    closest_addrs[_ii] = _addr
+                    break
+
+    return closest_addrs, closest_distances
+
+
+
+
 def watermarker(dataset, group_by, water_bin, attr_list, method):
     if method == 'embedding':
         model = gensim.models.KeyedVectors.load_word2vec_format(EMBEDDING_VEC,
@@ -63,7 +120,8 @@ def watermarker(dataset, group_by, water_bin, attr_list, method):
 
                 # modifying
                 try:
-                    addr = model.most_similar(positive=[addr])[int(embeded_bin, 2)][0]
+                    addr = model.most_similar(positive=[addr])\
+                                            [int(embeded_bin, 2)][0]
                     print(addr)
                 except:
                     water_bin = embeded_bin + water_bin
@@ -75,10 +133,16 @@ def watermarker(dataset, group_by, water_bin, attr_list, method):
         return
 
     elif method == 'geo':
-        
+        with open(ADDR2FORMAT_PKL, 'rb') as f:
+            addr2formats = pickle.load(f)
+        with open(ADDR2GEO_PKL, 'rb') as f:
+            addr2geos = pickle.load(f)
+
+
         return
 
-def detector(origin_set, modified_set, group_by, attr_list, water_len, EMBEDDING_VEC):
+def detector(origin_set, modified_set, group_by,
+             attr_list, water_len, METHOD):
     detected_bin = ''
 
     origin_set = subset.sorted_list(origin_set, group_by)
@@ -124,3 +188,15 @@ def detector(origin_set, modified_set, group_by, attr_list, water_len, EMBEDDING
             target_origin_addrs = [origin_rec[addr_first:addr_last+1]]
 
     return detected_bin
+
+if __name__ == '__main__':
+    with open(ADDR2FORMAT_PKL, 'rb') as f:
+        addr2formats = pickle.load(f)
+    with open(ADDR2GEO_PKL, 'rb') as f:
+        addr2geos = pickle.load(f)
+    listed_addr = ['東京都渋谷区']
+    num_cand = 4
+
+    closest_a, closest_d = closest_addrs(listed_addr, num_cand, addr2formats, addr2geos)
+    for i in range(num_cand):
+        print(closest_a[i], closest_d[i])
