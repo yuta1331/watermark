@@ -3,8 +3,7 @@
 
 import api
 import watermark
-
-import collections
+import random
 
 
 ########### config ############
@@ -12,18 +11,18 @@ import collections
 infile = '../Anonymizer/anonymized_data.csv'
 outfile = 'watermarked_data.csv'
 
+method = 'geo'
 embedding_vec = '../practice/neologd.vec'
 
 attr_list = ['sex', 'tel',
              'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
-             'birth', 'time'] # attributes of infile
+             'birth', 'time']  # attributes of infile
 
 sensitive = 9
 group_by_attr = ['time', 'sex']
 
 # 今はrandomな2進数を生成
 water_len = 256
-import random
 water_bin = ''.join([random.choice('01') for i in range(water_len)])
 print(water_bin)
 
@@ -32,7 +31,7 @@ csv_header, dataset = api.parsed_list(infile, True)
 group_by = [attr_list.index(attr) for attr in group_by_attr]
 
 ########### watermark ############
-watermark.watermarker(dataset, group_by, water_bin, attr_list, embedding_vec)
+watermark.watermarker(dataset, group_by, water_bin, attr_list, method)
 
 ########### check ############
 
