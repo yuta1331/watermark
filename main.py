@@ -26,13 +26,15 @@ GROUP_BY_ATTR = ['time', 'sex']  # これを元にグループ化
 
 # 今はrandomな2進数を生成
 WATER_LEN = 256
-try:
-    with open(WATERMARK, 'rb') as f:
-        water_bin = pickle.load(f)
-except:
+WATERMARK_GEN = False
+
+if WATERMARK_GEN is True:
     water_bin = ''.join([random.choice('01') for i in range(WATER_LEN)])
     with open(WATERMARK, 'wb') as f:
         pickle.dump(water_bin, f)
+else:
+    with open(WATERMARK, 'rb') as f:
+        water_bin = pickle.load(f)
 print(water_bin)
 
 ########### initial ############
