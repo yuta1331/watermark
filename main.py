@@ -22,7 +22,7 @@ ATTR_LIST = ['sex', 'tel',
              'birth', 'time']  # attributes of INFILE
 
 SENSITIVE = 9
-GROUP_BY_ATTR = ['time', 'sex']  # これを元にグループ化
+GROUP_BY_ATTR = ['time', 'tel', 'sex']  # これを元にグループ化
 
 # 今はrandomな2進数を生成
 WATER_LEN = 256
@@ -46,6 +46,9 @@ group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 # anonymized dataをソートして保存
 dataset = api.sorted_list(dataset, group_by)
 api.csv_composer(csv_header, dataset, INFILE)
+
+# datasetをgroup化
+group_set = api.equal_set(dataset, group_by)
 
 
 ########### watermark ############
