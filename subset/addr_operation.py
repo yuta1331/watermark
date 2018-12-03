@@ -67,11 +67,11 @@ def geo_from_addr(addr, addr2geos):
 
 
 # "東京都渋谷区" -> {"東京都渋谷区": [135, 48], "東京都": [134, 48]}の辞書を作る
-def local_addr2formatsgeos(attr_list, dataset, addr2formats, addr2geos):
+def local_addr2formatsgeos(attr_list, datalist, addr2formats, addr2geos):
     addr_first, addr_last = addr_range_catcher(attr_list)
 
     addr_set = set()
-    for record in dataset:
+    for record in datalist:
         addr_set.add(''.join(record[addr_first:addr_last+1]).strip('*'))
 
     hierarchical_addrs = set()
@@ -184,14 +184,14 @@ if __name__ == '__main__':
         addr2geos = pickle.load(f)
 
     # csv parser
-    _, dataset = parsed_list(INFILE, header=True)
+    _, datalist = parsed_list(INFILE, header=True)
 
     local_addr2formats, local_addr2geos =\
-        local_addr2formatsgeos(ATTR_LIST, dataset, addr2formats, addr2geos)
+        local_addr2formatsgeos(ATTR_LIST, datalist, addr2formats, addr2geos)
 
     # candidate: nearest addrs and their distances
     addr_first, addr_last = addr_range_catcher(ATTR_LIST)
-    for record in dataset:
+    for record in datalist:
         print(candidate_addr2geos(record[addr_first:addr_last+1], local_addr2formats, local_addr2geos, True))
 
     '''

@@ -25,13 +25,13 @@ GROUP_BY_ATTR = ['time', 'sex']
 WATER_LEN = 256
 
 ########### initial ############
-csv_header, origin_set = api.parsed_list(ORIGIN_FILE, header=True)
-_, modified_set = api.parsed_list(MODIFIED_FILE, header=True)
+csv_header, origin_list = api.parsed_list(ORIGIN_FILE, header=True)
+_, modified_list = api.parsed_list(MODIFIED_FILE, header=True)
 
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
 ########### detection ############
-detected_bin = detector(origin_set, modified_set, group_by,
+detected_bin = detector(origin_list, modified_list, group_by,
                         ATTR_LIST, WATER_LEN, METHOD)
 
 print(detected_bin)

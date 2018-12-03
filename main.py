@@ -28,6 +28,7 @@ GROUP_BY_ATTR = ['time', 'tel', 'sex']  # これを元にグループ化
 # 今はrandomな2進数を生成
 WATER_LEN = 256
 WATERMARK_GEN = False
+MAX_BIN = 3  # 各値につき最大の埋め込みビット
 
 if WATERMARK_GEN is True:
     water_bin = ''.join([random.choice('01') for i in range(WATER_LEN)])
@@ -51,7 +52,8 @@ api.csv_composer(csv_header, dataset, INFILE)
 
 
 ########### watermark ############
-watermark.watermarker(dataset, group_by, water_bin, ATTR_LIST, METHOD)
+watermark.watermarker(dataset, water_bin, MAX_BIN,
+                      None, ATTR_LIST, group_by, METHOD)
 
 ########### check ############
 

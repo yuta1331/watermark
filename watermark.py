@@ -1,14 +1,14 @@
 #! usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re
 import pickle
-import math
 # import gensim  # word2vec利用時
 
 import api
-from subset.addr_operation import local_addr2geos as la2g
+from subset.addr_operation import local_addr2formatsgeos as la2fg
 from subset.addr_operation import candidate_addresses as caddr
+from subset.addr_operation import geo_distance
+from subset.addr_operation import addr_range_catcher as addr_range
 
 
 ########## parameter ##########
@@ -75,38 +75,43 @@ def nearest_addrs(listed_addr, num_cand, addr2formats, addr2geos, distance = Fal
 
 
 
-def watermarker(dataset, water_bin, max_bin, embedded_location,
+def watermarker(datalist, water_bin, max_bin, embedded_location,
                 attr_list, group_by, method):
 
-    # datasetをgroup化
-    group_set = api.equal_set(dataset, group_by)
+    # datalistをgroup化
+    group_list = api.equal_list(datalist, group_by)
+    print(type(group_list))
 
     if embedded_location == None:
-        embedded_location = list(range(len(group_set)))
+        embedded_location = list(range(len(group_list)))
 
-    for group_i in embedded_location:
-        group = group_set[group_i] # 参照渡し？
+    if method == 'geo':
+        print('Watermarking with GeoLocation')
+        addr_first, addr_last = addr_range(attr_list)
+        with open(ADDR2FORMAT_PKL, 'rb') as f:
+            addr2formats = pickle.load(f)
+        with open(ADDR2GEO_PKL, 'rb') as f:
+            addr2geos = pickle.load(f)
 
-        if method == 'geo':
-            print('Watermarking with GeoLocation')
+        for group_i in embedded_location:
+            group = group_list[group_i] # 参照渡し？
+            print('group:\n', group)
 
-            with open(ADDR2FORMAT_PKL, 'rb') as f:
-                addr2formats = pickle.load(f)
-            with open(ADDR2GEO_PKL, 'rb') as f:
-                addr2geos = pickle.load(f)
+            local_addr2formats, local_addr2geos =\
+                la2fg(attr_list, datalist, addr2formats, addr2geos)
 
-            local_addr2geos = la2g(attr_list, dataset,
-                                   addr2formats, addr2geos)
-
-            candidate_addresses = caddr()
+            formated_addr = group[addr_first:]
+            candidate_addresses = caddr(formated_addr,
+                                        local_addr2formats,
+                                        local_addr2geos)
 
 
-def detector(org_set, mod_set, group_by,
+def detector(org_list, mod_list, group_by,
              attr_list, water_len, method):
     detected_bin = ''
 
-    org_set = api.sorted_list(org_set, group_by)
-    mod_set = api.sorted_list(mod_set, group_by)
+    org_list = api.sorted_list(org_list, group_by)
+    mod_list = api.sorted_list(mod_list, group_by)
 
     # 住所のみに埋め込まれている
     addr_first, addr_last = addr_range_catcher(attr_list)
@@ -120,13 +125,13 @@ def detector(org_set, mod_set, group_by,
 
         num_changed = 0  # for debug
 
-        for i_data, org_record in enumerate(org_set):
+        for i_data, org_record in enumerate(org_list):
             if len(detected_bin) == 256:
                 break
 
             # 住所はまとめてくっつける（*なし）
             org_addr = joined_addr(addr_first, addr_last, org_record)
-            mod_addr = joined_addr(addr_first, addr_last, mod_set[i_data])
+            mod_addr = joined_addr(addr_first, addr_last, mod_list[i_data])
 
             num_cand = 2**BIT_LEN
             if org_addr != mod_addr:
@@ -152,7 +157,7 @@ def detector(org_set, mod_set, group_by,
     # 一旦待った
     target_group_key = list()
     target_org_addrs = list()
-    for org_record in org_set:
+    for org_record in org_list:
         if len(detected_bin) == 256:
             break
 
@@ -170,7 +175,7 @@ def detector(org_set, mod_set, group_by,
         if target_group_key == tmp_org_key:
             target_org_addrs.append(org_record[addr_first:addr_last+1])
         else:
-            for mod_record in mod_set:
+            for mod_record in mod_list:
                 tmp_mod_key = [mod_record for i in group_by]
 
                 if tmp_mod_key == target_group_key:
@@ -190,6 +195,7 @@ def detector(org_set, mod_set, group_by,
     return detected_bin
 
 if __name__ == '__main__':
+    '''
     with open(ADDR2FORMAT_PKL, 'rb') as f:
         addr2formats = pickle.load(f)
     with open(ADDR2GEO_PKL, 'rb') as f:
@@ -200,3 +206,4 @@ if __name__ == '__main__':
     nearest_a, nearest_d = nearest_addrs(listed_addr, num_cand, addr2formats, addr2geos, distance=True)
     for i in range(num_cand):
         print(nearest_a[i], nearest_d[i])
+    '''
