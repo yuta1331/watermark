@@ -7,6 +7,8 @@ import math
 # import gensim  # word2vec利用時
 
 import api
+from subset.addr_operation import local_addr2geos as la2g
+from subset.addr_operation import candidate_addresses as caddr
 
 
 ########## parameter ##########
@@ -19,29 +21,6 @@ ADDR2GEO_PKL = 'pickles/addr2geo.pkl'
 BIT_LEN = 2
 
 ########## method ###########
-
-def addr_range_catcher(attr_list):
-    n = len(attr_list)
-
-    try:
-        first = attr_list.index('addr0')
-    except:
-        for i in range(n):
-            if 'addr' in attr_list[i]:
-                first = i
-                break
-    for i in range(n)[::-1]:
-        if 'addr' in attr_list[i]:
-            last = i
-            return first, last
-
-def joined_addr(first, last, record):
-    addr = ''.join(record[first:last+1])
-    return re.sub(r'\*+', '', addr)
-
-def geo_distance(geo1, geo2):
-    return math.sqrt((geo1[0] - geo2[0]) ** 2 +
-                     (geo1[1] - geo2[1]) ** 2)
 
 def nearest_addrs(listed_addr, num_cand, addr2formats, addr2geos, distance = False):
     # existed_addr_num: listed_addrにおける*でない値の個数
@@ -96,100 +75,31 @@ def nearest_addrs(listed_addr, num_cand, addr2formats, addr2geos, distance = Fal
 
 
 
-def watermarker(dataset, group_by, water_bin, attr_list, method):
-    dataset = api.sorted_list(dataset, group_by)
+def watermarker(dataset, water_bin, max_bin, embedded_location,
+                attr_list, group_by, method):
 
-    if method == 'embedding':
-        model = gensim.models.KeyedVectors.load_word2vec_format(EMBEDDING_VEC,
-                                                                binary=False)
+    # datasetをgroup化
+    group_set = api.equal_set(dataset, group_by)
 
-        # グループごとに埋め込み
-        tmp_group_key = list()
-        for record in dataset:
-            if not water_bin:
-                break
+    if embedded_location == None:
+        embedded_location = list(range(len(group_set)))
 
-            data_key = [record[i] for i in group_by]
+    for group_i in embedded_location:
+        group = group_set[group_i] # 参照渡し？
 
-            # 今はグループに1つだけ編集
-            # 住所のみ
-            if (not tmp_group_key) or (tmp_group_key != data_key):
-                tmp_group_key = data_key
-                embedded_bin = water_bin[:2]
-                water_bin = water_bin[2:]
+        if method == 'geo':
+            print('Watermarking with GeoLocation')
 
-                # 住所を取り出す
-                addr_first, addr_last = addr_range_catcher(attr_list)
-                # 住所はまとめてくっつける(*なし)
-                addr = joined_addr(addr_first, addr_last, record)
-                # print(embedded_bin, ' ', addr)
+            with open(ADDR2FORMAT_PKL, 'rb') as f:
+                addr2formats = pickle.load(f)
+            with open(ADDR2GEO_PKL, 'rb') as f:
+                addr2geos = pickle.load(f)
 
-                # modifying
-                try:
-                    addr = model.most_similar(positive=[addr])\
-                                            [int(embedded_bin, 2)][0]
-                    print(addr)
-                except:
-                    water_bin = embedded_bin + water_bin
+            local_addr2geos = la2g(attr_list, dataset,
+                                   addr2formats, addr2geos)
 
-                # formatting
-                # addr
+            candidate_addresses = caddr()
 
-                # dataset[i][addr_first:addr_last+1] = addr
-        return
-
-    elif method == 'geo':
-        with open(ADDR2FORMAT_PKL, 'rb') as f:
-            addr2formats = pickle.load(f)
-        with open(ADDR2GEO_PKL, 'rb') as f:
-            addr2geos = pickle.load(f)
-
-        # グループごとに埋め込み
-        tmp_group_key = list()
-
-        # 住所のみに埋め込む
-        addr_first, addr_last = addr_range_catcher(attr_list)
-
-        for i_data, record in enumerate(dataset):
-            if not water_bin:
-                break
-
-            data_key = [record[i] for i in group_by]
-
-            # 今はグループに1つだけ編集
-            if (not tmp_group_key) or (tmp_group_key != data_key):
-                tmp_group_key = data_key
-
-                embedded_bin = water_bin[:BIT_LEN]
-                water_bin = water_bin[BIT_LEN:]
-
-                # 住所はまとめてくっつける（*なし）
-                addr = joined_addr(addr_first, addr_last, record)
-                # print(embedded_bin, ' ', addr)
-
-                # modifying
-                try:
-                    num_cand = 2**BIT_LEN
-
-                    # 付け焼刃でnum_cand+1と[+1]
-                    addr = nearest_addrs(record[addr_first:addr_last+1],
-                                         num_cand + 1, addr2formats, addr2geos)\
-                                         [int(embedded_bin, 2)+1]
-                    print(embedded_bin, record[addr_first:addr_last+1], addr)
-                except Exception as e:
-                    print('---- print error ----')
-                    print(e.message)
-                    print('---- print end ----')
-                    water_bin = embedded_bin + water_bin
-
-                # formatting
-                addr = addr2formats[addr]
-                addr.append('*')  # pickleのformatは'*'が1つ少ない
-
-                dataset[i_data][addr_first:addr_last+1] = addr
-                # print(dataset[i_data])
-                # print(len(dataset[i_data]))
-        return
 
 def detector(org_set, mod_set, group_by,
              attr_list, water_len, method):

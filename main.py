@@ -3,6 +3,7 @@
 
 import api
 import watermark
+
 import random
 import pickle
 
@@ -47,8 +48,6 @@ group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 dataset = api.sorted_list(dataset, group_by)
 api.csv_composer(csv_header, dataset, INFILE)
 
-# datasetをgroup化
-group_set = api.equal_set(dataset, group_by)
 
 
 ########### watermark ############
