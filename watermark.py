@@ -103,6 +103,8 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
         for group_i in embedded_location:
             group = group_list[group_i] # 参照渡し
 
+            print('######## group_i: ', group_i, '########')
+
             prev_addr = ''
             for _i, record in enumerate(group):
                 formated_addr = record[addr_first:addr_last+1]
@@ -119,6 +121,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                                 int(math.log2(len(candidate_addresses))))
 
                         if len(water_bin) > 0:
+                            print('######## i in group: ', _i, '########')
                             embed_bin = water_bin[:embed_num]
                             water_bin = water_bin[embed_num:]
 
@@ -138,12 +141,6 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             water_locate_n_num.append([group_i, _i, embed_num])
                         else:
                             return
-
-                    '''
-                    # formatting
-                    # print(dataset[i_data])
-                    # print(len(dataset[i_data]))
-                    '''
 
 
 def detector(org_list, mod_list, group_by,
