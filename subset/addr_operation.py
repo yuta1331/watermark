@@ -161,7 +161,7 @@ def candidate_addr2geos(formated_addr, addr2formats,
     if distance is True:
         return cand_addr2geos
     else:
-        return cand_addr2geos.keys()
+        return list(cand_addr2geos.keys())
 
 
 if __name__ == '__main__':

@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import pickle
+import math
 # import gensim  # word2vec利用時
 
 import api
 from subset.addr_operation import local_addr2formatsgeos as la2fg
-from subset.addr_operation import candidate_addresses as caddr
+from subset.addr_operation import candidate_addr2geos as caddr2geos
 from subset.addr_operation import geo_distance
 from subset.addr_operation import addr_range_catcher as addr_range
 
@@ -78,9 +79,12 @@ def nearest_addrs(listed_addr, num_cand, addr2formats, addr2geos, distance = Fal
 def watermarker(datalist, water_bin, max_bin, embedded_location,
                 attr_list, group_by, method):
 
+    # 埋め込み位置と何ビット埋め込んだか保存
+    # [group_i, _i, embed_num]
+    water_locate_n_num = list()
+
     # datalistをgroup化
     group_list = api.equal_list(datalist, group_by)
-    print(type(group_list))
 
     if embedded_location == None:
         embedded_location = list(range(len(group_list)))
@@ -93,17 +97,53 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
         with open(ADDR2GEO_PKL, 'rb') as f:
             addr2geos = pickle.load(f)
 
+        local_addr2formats, local_addr2geos =\
+            la2fg(attr_list, datalist, addr2formats, addr2geos)
+
         for group_i in embedded_location:
-            group = group_list[group_i] # 参照渡し？
-            print('group:\n', group)
+            group = group_list[group_i] # 参照渡し
 
-            local_addr2formats, local_addr2geos =\
-                la2fg(attr_list, datalist, addr2formats, addr2geos)
+            prev_addr = ''
+            for _i, record in enumerate(group):
+                formated_addr = record[addr_first:addr_last+1]
+                addr = ''.join(formated_addr).strip('*')
 
-            formated_addr = group[addr_first:]
-            candidate_addresses = caddr(formated_addr,
-                                        local_addr2formats,
-                                        local_addr2geos)
+                if prev_addr != addr:
+                    prev_addr = addr
+                    candidate_addresses = caddr2geos(formated_addr,
+                                                     local_addr2formats,
+                                                     local_addr2geos)
+                    if candidate_addresses != None:
+                        embed_num = \
+                            min(max_bin,
+                                int(math.log2(len(candidate_addresses))))
+
+                        if len(water_bin) > 0:
+                            embed_bin = water_bin[:embed_num]
+                            water_bin = water_bin[embed_num:]
+
+                            embedded_addr = \
+                                candidate_addresses[int(embed_bin, 2)]
+                            print('embe: ', embed_bin)
+                            print('prev: ', addr)
+                            print('modi: ', embedded_addr)
+                            print('\n')
+                            # formatting
+                            addr = addr2formats[addr]
+                            addr.append('*')  # pickleのformatは'*'が1つ少ない
+
+                            # modifying
+                            group[_i][addr_first:addr_last+1] = addr
+
+                            water_locate_n_num.append([group_i, _i, embed_num])
+                        else:
+                            return
+
+                    '''
+                    # formatting
+                    # print(dataset[i_data])
+                    # print(len(dataset[i_data]))
+                    '''
 
 
 def detector(org_list, mod_list, group_by,
