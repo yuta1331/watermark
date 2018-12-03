@@ -11,6 +11,7 @@ def joined_addr(first, last, record):
     addr = ''.join(record[first:last+1])
     return re.sub(r'\*+', '', addr)
 
+
 def addr_range_catcher(attr_list):
     n = len(attr_list)
 
@@ -25,6 +26,7 @@ def addr_range_catcher(attr_list):
         if 'addr' in attr_list[i]:
             last = i
             return first, last
+
 
 ################ dictionaries ##################
 
@@ -48,6 +50,7 @@ def formated_addr_from_addr(addr, addr2formats):
                         formated_addr[_i] = extra
                         return formated_addr
 
+
 def geo_from_addr(addr, addr2geos):
     try:
         geo = addr2geos[addr]
@@ -61,6 +64,7 @@ def geo_from_addr(addr, addr2geos):
             addr = addr[:-1]
             if addr in addr2geos:
                 return addr2geos[addr]
+
 
 # "東京都渋谷区" -> {"東京都渋谷区": [135, 48], "東京都": [134, 48]}の辞書を作る
 def local_addr2formatsgeos(attr_list, dataset, addr2formats, addr2geos):
@@ -93,12 +97,16 @@ def local_addr2formatsgeos(attr_list, dataset, addr2formats, addr2geos):
 
     return local_addr2formats, local_addr2geos
 
+
 ################ geo calculators ##################
 def geo_distance(geo1, geo2):
     return math.sqrt((geo1[0] - geo2[0]) ** 2 +
                      (geo1[1] - geo2[1]) ** 2)
 
+
 def candidate_addresses(formated_addr, addr2formats, addr2geos):
+    # 候補がなければNoneを返す
+
     if formated_addr[1] == '*':
         return None
     else:
@@ -130,15 +138,17 @@ def candidate_addresses(formated_addr, addr2formats, addr2geos):
                     cand_addrs.add(''.join(addr).strip('*'))
         return cand_addrs
 
+
 def candidate_addr2geos(formated_addr, addr2formats,
                         addr2geos, distance=False):
-    addr = ''.join(formated_addr).strip('*')
-    geo = addr2geos[addr]
+    # 候補がなければNoneを返す
 
     cand_addrs = candidate_addresses(formated_addr, addr2formats, addr2geos)
-
-    if cand_addrs == None:
+    if cand_addrs is None:
         return None
+
+    addr = ''.join(formated_addr).strip('*')
+    geo = addr2geos[addr]
 
     cand_addr2geos = dict()
 
@@ -146,14 +156,12 @@ def candidate_addr2geos(formated_addr, addr2formats,
         cand_addr2geos[cand_addr] = geo_distance(geo, addr2geos[cand_addr])
 
     cand_addr2geos = OrderedDict(sorted(cand_addr2geos.items(),
-                                         key=lambda x: x[1]))
+                                        key=lambda x: x[1]))
 
-    if distance == True:
+    if distance is True:
         return cand_addr2geos
     else:
         return cand_addr2geos.keys()
-
-
 
 
 if __name__ == '__main__':
