@@ -3,12 +3,12 @@
 
 import pickle
 import math
+import copy
 # import gensim  # word2vec利用時
 
 import api
 from subset.addr_operation import local_addr2formatsgeos as la2fg
 from subset.addr_operation import candidate_addr2geos as caddr2geos
-from subset.addr_operation import geo_distance
 from subset.addr_operation import addr_range_catcher as addr_range
 
 
@@ -23,59 +23,6 @@ BIT_LEN = 2
 
 ########## method ###########
 
-def nearest_addrs(listed_addr, num_cand, addr2formats, addr2geos, distance = False):
-    # existed_addr_num: listed_addrにおける*でない値の個数
-    # ['東京都', '渋谷区', '*', '*']なら2
-    # nearestの候補は最終的に、existed_addr_numを揃えたいが
-    # 今はまだ書けていない。
-    for i, _chunk in enumerate(listed_addr):
-        if _chunk == '*':
-            existed_addr_num = i
-            break
-    else:
-        existed_addr_num = len(listed_addr)
-
-
-    addr = ''.join(listed_addr).strip('*')
-    geo = addr2geos[addr]
-
-    nearest_addrs = list()
-    nearest_distances = list()
-
-    for _i, _addr in enumerate(addr2geos.keys()):
-        _d = geo_distance(geo, addr2geos[_addr])
-
-        # num_candに満たない場合はlistが溜まり切っていないので別処理
-        if _i < num_cand:
-            nearest_addrs.append(_addr)
-            nearest_distances.append(_d)
-            for i in range(_i):
-                for j in range(1, _i + 1 - i):
-                    if nearest_distances[j - 1] > nearest_distances[j]:
-                        nearest_distances[j - 1], nearest_distances[j] =\
-                                nearest_distances[j], nearest_distances[j - 1]
-
-                        nearest_addrs[j - 1], nearest_addrs[j] =\
-                                nearest_addrs[j], nearest_addrs[j - 1]
-
-        else:
-            # _ddはリスト済みの値たち
-            for _ii, _dd in enumerate(nearest_distances):
-                if _dd > _d:
-                    for i in range(_ii + 1, num_cand)[::-1]:
-                        nearest_distances[i] = nearest_distances[i - 1]
-                        nearest_addrs[i] = nearest_addrs[i - 1]
-                    nearest_distances[_ii] = _d
-                    nearest_addrs[_ii] = _addr
-                    break
-
-    if distance == True:
-        return nearest_addrs, nearest_distances
-    return nearest_addrs
-
-
-
-
 def watermarker(datalist, water_bin, max_bin, embedded_location,
                 attr_list, group_by, method):
 
@@ -84,7 +31,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
     water_locate_n_num = list()
 
     # datalistをgroup化
-    group_list = api.equal_list(datalist, group_by)
+    group_list = api.datalist2groups(datalist, group_by)
 
     if embedded_location == None:
         embedded_location = list(range(len(group_list)))
@@ -129,18 +76,23 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                                 candidate_addresses[int(embed_bin, 2)]
                             print('embe: ', embed_bin)
                             print('prev: ', addr)
-                            print('modi: ', embedded_addr)
-                            print('\n')
                             # formatting
-                            addr = addr2formats[addr]
-                            addr.append('*')  # pickleのformatは'*'が1つ少ない
+                            embedded_addr = copy.deepcopy(addr2formats[embedded_addr])
+                            embedded_addr.append('*')  # pickleのformatは'*'が1つ少ない
+                            print('modi: ', embedded_addr)
+                            print('modn: ', len(embedded_addr))
+                            print('\n')
 
                             # modifying
-                            group[_i][addr_first:addr_last+1] = addr
+                            group_list[group_i][_i]\
+                                    [addr_first:addr_last+1]\
+                                    = embedded_addr
 
                             water_locate_n_num.append([group_i, _i, embed_num])
+                        # water_bin has been run out
                         else:
-                            return
+                            api.groups2datalist(datalist, group_list)
+                            return water_locate_n_num
 
 
 def detector(org_list, mod_list, group_by,

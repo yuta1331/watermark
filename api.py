@@ -3,18 +3,21 @@
 
 import csv
 
+
 def sorted_list(datalist, priority):
     if priority is None:
         priority = list(range(len(datalist[0])))
     for i in priority[::-1]:
-        datalist.sort(key=lambda x:x[i])
+        datalist.sort(key=lambda x: x[i])
     return datalist
 
-def equal_list(datalist, priority):
+
+# priorityの属性が等しいレコード同士でグループ化する
+def datalist2groups(datalist, priority):
     datalist = sorted_list(datalist, priority)
     groups = list()
-    _tmp_group = [datalist.pop(0)]
-    for record in datalist:
+    _tmp_group = [datalist[0]]
+    for record in datalist[1:]:
         for _prio in priority:
             if record[_prio] != _tmp_group[0][_prio]:
                 groups.append(_tmp_group)
@@ -24,6 +27,15 @@ def equal_list(datalist, priority):
             _tmp_group.append(record)
     groups.append(_tmp_group)
     return groups
+
+
+def groups2datalist(datalist, groups):
+    i = 0
+    for group in groups:
+        for record in group:
+            datalist[i] = record
+            i += 1
+    return
 
 
 ############ API ##############
@@ -47,6 +59,7 @@ def parsed_list(infile, header=False):
         return csv_header, datalist
     return datalist
 
+
 def csv_composer(init_row, outlist, outfile):
     # outlist = sorted_list(outlist, None)
     try:
@@ -67,7 +80,7 @@ if __name__ == '__main__':
     GROUP_BY_ATTR = ['time', 'tel', 'sex']  # これを元にグループ化
     group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
     _, datalist = parsed_list('anonymized_data.csv', header=True)
-    group_list = equal_list(datalist, group_by)
+    group_list = datalist2groups(datalist, group_by)
 
     for equal in group_list:
         print(equal)
