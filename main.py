@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import api
-import watermark
+from watermark import watermarker
 
 import random
 import pickle
@@ -52,7 +52,7 @@ api.csv_composer(csv_header, dataset, INFILE)
 
 
 ########### watermark ############
-watermark.watermarker(dataset, water_bin, MAX_BIN,
+watermarker(dataset, water_bin, MAX_BIN,
                       None, ATTR_LIST, group_by, METHOD)
 
 ########### check ############
