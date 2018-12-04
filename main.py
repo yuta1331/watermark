@@ -34,19 +34,19 @@ else:
 print(water_bin)
 
 ########### initial ############
-csv_header, dataset = api.parsed_list(INFILE, True)
+csv_header, datalist = api.parsed_list(INFILE, True)
 
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
 # anonymized dataをソートして保存
 if IS_ORIGIN_FILE_SORTED is False:
-    dataset = api.sorted_list(dataset, group_by)
-    api.csv_composer(csv_header, dataset, INFILE)
+    datalist = api.sorted_list(datalist, group_by)
+    api.csv_composer(csv_header, datalist, INFILE)
 
 
 ########### watermark ############
-watermarker(dataset, water_bin, MAX_BIN,
+watermarker(datalist, water_bin, MAX_BIN,
             None, ATTR_LIST, group_by, METHOD)
 
 ########### check ############
@@ -58,7 +58,7 @@ group_collection = list()
 # minを使いたいから
 nums_of_each_group = list()
 
-for record in dataset:
+for record in datalist:
     if len(group_collection) == 0:
         group_collection = [[record[i] for i in group_by]]
         group_collection[0].append(1)
@@ -78,4 +78,4 @@ print('num_of_group:  ', len(group_collection))
 print('minimun group: ', min(nums_of_each_group))
 
 ########### output ############
-api.csv_composer(csv_header, dataset, OUTFILE)
+api.csv_composer(csv_header, datalist, OUTFILE)
