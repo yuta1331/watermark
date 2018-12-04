@@ -62,8 +62,9 @@ def distance(locate1, locate2):
     distance = sqrt(pow(t1, 2) + pow(t2, 2))
     return distance / 1000
 
-locate1 = AddrtoLocate("東京都")
-print(locate1)
-locate2 = AddrtoLocate("埼玉県")
-print(locate2)
-print(distance(locate1, locate2))
+if __name__ == '__main__':
+    locate1 = AddrtoLocate("東京都")
+    print(locate1)
+    locate2 = AddrtoLocate("埼玉県")
+    print(locate2)
+    print(distance(locate1, locate2))
