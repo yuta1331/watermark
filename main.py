@@ -22,6 +22,7 @@ WATER_LEN = consts.WATER_LEN
 MAX_BIN = consts.MAX_BIN
 
 WATERMARK_GEN = False
+IS_ORIGIN_FILE_SORTED = True
 
 if WATERMARK_GEN is True:
     water_bin = ''.join([random.choice('01') for i in range(WATER_LEN)])
@@ -39,14 +40,14 @@ csv_header, dataset = api.parsed_list(INFILE, True)
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
 # anonymized dataをソートして保存
-dataset = api.sorted_list(dataset, group_by)
-api.csv_composer(csv_header, dataset, INFILE)
-
+if IS_ORIGIN_FILE_SORTED is False:
+    dataset = api.sorted_list(dataset, group_by)
+    api.csv_composer(csv_header, dataset, INFILE)
 
 
 ########### watermark ############
 watermarker(dataset, water_bin, MAX_BIN,
-                      None, ATTR_LIST, group_by, METHOD)
+            None, ATTR_LIST, group_by, METHOD)
 
 ########### check ############
 
