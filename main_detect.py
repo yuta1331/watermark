@@ -3,26 +3,21 @@
 
 import api
 from watermark import detector
+import consts
 
 import collections
 
 
 ########### config ############
 
-ORIGIN_FILE = 'anonymized_data.csv'
-MODIFIED_FILE = 'watermarked_data.csv'
-
-# METHOD = 'embedding'
-METHOD = 'geo'
-
-ATTR_LIST = ['sex', 'tel',
-             'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
-             'birth', 'time'] # attributes of infile
-
-SENSITIVE = 9
-GROUP_BY_ATTR = ['time', 'sex']
-
-WATER_LEN = 256
+ORIGIN_FILE = consts.ORIGIN_FILE 
+MODIFIED_FILE = consts.MODIFIED_FILE 
+METHOD = consts.METHOD 
+ATTR_LIST = consts.ATTR_LIST 
+SENSITIVE = consts.SENSITIVE
+GROUP_BY_ATTR = consts.GROUP_BY_ATTR 
+WATER_LEN = consts.WATER_LEN
+MAX_BIN = consts.MAX_BIN
 
 ########### initial ############
 csv_header, origin_list = api.parsed_list(ORIGIN_FILE, header=True)

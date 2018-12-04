@@ -3,6 +3,7 @@
 
 import api
 from watermark import watermarker
+import consts
 
 import random
 import pickle
@@ -10,25 +11,17 @@ import pickle
 
 ########### config ############
 
-INFILE = 'anonymized_data.csv'
-OUTFILE = 'watermarked_data.csv'
+INFILE = consts.ORIGIN_FILE
+OUTFILE = consts.MODIFIED_FILE
+WATERMARK = consts.WATERMARK
+METHOD = consts.METHOD
+ATTR_LIST = consts.ATTR_LIST
+SENSITIVE = consts.SENSITIVE
+GROUP_BY_ATTR = consts.GROUP_BY_ATTR
+WATER_LEN = consts.WATER_LEN
+MAX_BIN = consts.MAX_BIN
 
-WATERMARK = 'pickles/watermark.pkl'
-
-# METHOD = 'embedding'
-METHOD = 'geo'
-
-ATTR_LIST = ['sex', 'tel',
-             'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
-             'birth', 'time']  # attributes of INFILE
-
-SENSITIVE = 9
-GROUP_BY_ATTR = ['time', 'tel', 'sex']  # これを元にグループ化
-
-# 今はrandomな2進数を生成
-WATER_LEN = 256
 WATERMARK_GEN = False
-MAX_BIN = 3  # 各値につき最大の埋め込みビット
 
 if WATERMARK_GEN is True:
     water_bin = ''.join([random.choice('01') for i in range(WATER_LEN)])

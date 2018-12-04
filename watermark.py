@@ -76,10 +76,10 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                                 candidate_addresses[int(embed_bin, 2)]
                             print('embe: ', embed_bin)
                             print('prev: ', addr)
+                            print('modi: ', embedded_addr)
                             # formatting
                             embedded_addr = copy.deepcopy(addr2formats[embedded_addr])
                             embedded_addr.append('*')  # pickleのformatは'*'が1つ少ない
-                            print('modi: ', embedded_addr)
                             print('modn: ', len(embedded_addr))
                             print('\n')
 
