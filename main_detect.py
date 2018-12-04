@@ -17,14 +17,14 @@ WATER_LEN = consts.WATER_LEN
 MAX_BIN = consts.MAX_BIN
 
 ########### initial ############
-_, origin_list = api.parsed_list(ORIGIN_FILE, header=True)
-_, modified_list = api.parsed_list(MODIFIED_FILE, header=True)
+_, origin_l = api.parsed_list(ORIGIN_FILE, header=True)
+_, modified_l = api.parsed_list(MODIFIED_FILE, header=True)
 
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
 ########### detection ############
-detected_bin = detector(origin_list, modified_list, group_by,
-                        ATTR_LIST, WATER_LEN, METHOD)
+detected_bin = detector(origin_l, modified_l, MAX_BIN, None,
+                        ATTR_LIST, group_by, WATER_LEN, METHOD)
 
 print(detected_bin)

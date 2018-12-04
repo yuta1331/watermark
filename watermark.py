@@ -44,6 +44,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
         with open(ADDR2GEO_PKL, 'rb') as f:
             addr2geos = pickle.load(f)
 
+        # localized dictionaries
         local_addr2formats, local_addr2geos =\
             la2fg(attr_list, datalist, addr2formats, addr2geos)
 
@@ -95,16 +96,16 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             return water_locate_n_num
 
 
-def detector(org_list, mod_list, group_by,
-             attr_list, water_len, method):
+def detector(org_l, mod_l, max_bin, water_locate_n_num,
+             attr_list, group_by, water_len, method):
     detected_bin = ''
 
-    org_list = api.sorted_list(org_list, group_by)
-    mod_list = api.sorted_list(mod_list, group_by)
+    # datalistをgroup化
+    org_group_l = api.datalist2groups(org_l, group_by)
+    mod_group_l = api.datalist2groups(mod_l, group_by)
 
     # 住所のみに埋め込まれている
-    addr_first, addr_last = addr_range_catcher(attr_list)
-
+    addr_first, addr_last = addr_range(attr_list)
 
     if method == 'geo':
         with open(ADDR2FORMAT_PKL, 'rb') as f:
@@ -112,15 +113,31 @@ def detector(org_list, mod_list, group_by,
         with open(ADDR2GEO_PKL, 'rb') as f:
             addr2geos = pickle.load(f)
 
-        num_changed = 0  # for debug
+        # localized dictionaries
+        local_addr2formats, local_addr2geos =\
+            la2fg(attr_list, org_l, addr2formats, addr2geos)
 
-        for i_data, org_record in enumerate(org_list):
+        for group_i in range(len(org_group_l)):
+            org_g = org_group_l[group_i]
+            mod_g = mod_group_l[group_i]
+
+            for _i in range(len(org_g)):
+                org_addr = org_g[_i][addr_first:addr_last+1]
+                org_addr = ''.join(org_addr).strip('*')
+
+                mod_addr = mod_g[_i][addr_first:addr_last+1]
+                mod_addr = ''.join(mod_addr).strip('*')
+
+
+
+
+        for i_data, org_record in enumerate(org_l):
             if len(detected_bin) == 256:
                 break
 
             # 住所はまとめてくっつける（*なし）
             org_addr = joined_addr(addr_first, addr_last, org_record)
-            mod_addr = joined_addr(addr_first, addr_last, mod_list[i_data])
+            mod_addr = joined_addr(addr_first, addr_last, mod_l[i_data])
 
             num_cand = 2**BIT_LEN
             if org_addr != mod_addr:
@@ -146,7 +163,7 @@ def detector(org_list, mod_list, group_by,
     # 一旦待った
     target_group_key = list()
     target_org_addrs = list()
-    for org_record in org_list:
+    for org_record in org_l:
         if len(detected_bin) == 256:
             break
 
@@ -164,7 +181,7 @@ def detector(org_list, mod_list, group_by,
         if target_group_key == tmp_org_key:
             target_org_addrs.append(org_record[addr_first:addr_last+1])
         else:
-            for mod_record in mod_list:
+            for mod_record in mod_l:
                 tmp_mod_key = [mod_record for i in group_by]
 
                 if tmp_mod_key == target_group_key:
