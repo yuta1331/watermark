@@ -60,36 +60,46 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 
                 if prev_addr != addr:
                     prev_addr = addr
-                    candidate_addresses = caddr2geos(formated_addr,
-                                                     local_addr2formats,
-                                                     local_addr2geos)
+                    candidate_addresses = caddr2geos(
+                        formated_addr,
+                        local_addr2formats,
+                        local_addr2geos
+                        )
+
                     if candidate_addresses != None:
-                        embed_num = \
-                            min(max_bin,
-                                int(math.log2(len(candidate_addresses))))
+                        embed_num = min(
+                            max_bin,
+                            int(math.log2(len(candidate_addresses)))
+                            )
 
                         if len(water_bin) > 0:
                             print('######## i in group: ', _i, '########')
                             embed_bin = water_bin[:embed_num]
                             water_bin = water_bin[embed_num:]
 
-                            embedded_addr = \
-                                candidate_addresses[int(embed_bin, 2)]
+                            embedded_addr = candidate_addresses[
+                                int(embed_bin, 2)
+                                ]
+
                             print('embe: ', embed_bin)
                             print('prev: ', addr)
                             print('modi: ', embedded_addr)
                             # formatting
-                            embedded_addr = copy.deepcopy(addr2formats[embedded_addr])
+                            embedded_addr = copy.deepcopy(
+                                addr2formats[embedded_addr]
+                                )
                             embedded_addr.append('*')  # pickleのformatは'*'が1つ少ない
                             print('modn: ', len(embedded_addr))
                             print('\n')
 
                             # modifying
                             group_list[group_i][_i]\
-                                    [addr_first:addr_last+1]\
-                                    = embedded_addr
+                                [addr_first:addr_last+1]\
+                                = embedded_addr
 
-                            water_locate_n_num.append([group_i, _i, embed_num])
+                            water_locate_n_num.append([group_i, 
+                                                      _i,
+                                                      embed_num])
                         # water_bin has been run out
                         else:
                             api.groups2datalist(datalist, group_list)

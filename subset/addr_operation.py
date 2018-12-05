@@ -133,8 +133,8 @@ def candidate_addresses(formated_addr, addr2formats, addr2geos):
                     return cand_addrs
                 elif len(parent) == len(addr) - 1:
                     cand_addrs.add(''.join(addr).strip('*'))
-                elif (addr[len(parent)] != '*') and\
-                     (addr[len(parent)+1] == '*'):
+                elif ((addr[len(parent)] != '*') and
+                        (addr[len(parent)+1] == '*')):
                     cand_addrs.add(''.join(addr).strip('*'))
         return cand_addrs
 
@@ -143,7 +143,9 @@ def candidate_addr2geos(formated_addr, addr2formats,
                         addr2geos, distance=False):
     # 候補がなければNoneを返す
 
-    cand_addrs = candidate_addresses(formated_addr, addr2formats, addr2geos)
+    cand_addrs = candidate_addresses(formated_addr,
+                                     addr2formats, 
+                                     addr2geos)
     if cand_addrs is None:
         return None
 
@@ -192,7 +194,11 @@ if __name__ == '__main__':
     # candidate: nearest addrs and their distances
     addr_first, addr_last = addr_range_catcher(ATTR_LIST)
     for record in datalist:
-        print(candidate_addr2geos(record[addr_first:addr_last+1], local_addr2formats, local_addr2geos, True))
+        print(
+            candidate_addr2geos(record[addr_first:addr_last+1],
+                                local_addr2formats,
+                                local_addr2geos, True)
+        )
 
     '''
     # local_addr2geos
