@@ -28,6 +28,15 @@ def addr_range_catcher(attr_list):
             return first, last
 
 
+def parent_addr(formated_addr):
+    if formated_addr.index('*') == 1:
+        return None
+    elif '*' in formated_addr:
+        return ''.join(formated_addr[:formated_addr.index('*')-1])
+    else:
+        return ''.join(formated_addr[:-1])
+
+
 ################ dictionaries ##################
 
 def formated_addr_from_addr(addr, addr2formats):

@@ -10,6 +10,7 @@ import api
 from subset.addr_operation import local_addr2formatsgeos as la2fg
 from subset.addr_operation import candidate_addr2geos as caddr2geos
 from subset.addr_operation import addr_range_catcher as addr_range
+from subset.addr_operation import parent_addr as pa
 
 
 ########## parameter ##########
@@ -49,17 +50,19 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
             la2fg(attr_list, datalist, addr2formats, addr2geos)
 
         for group_i in embedded_location:
-            group = group_list[group_i] # 参照渡し
+            group = group_list[group_i]  # 参照渡し
 
             print('######## group_i: ', group_i, '########')
 
-            prev_addr = ''
-            for _i, record in enumerate(group):
+            prev_parent_addr = ''
+            for _i in range(len(group)):
+                record = group[_i]  # 参照渡し
                 formated_addr = record[addr_first:addr_last+1]
                 addr = ''.join(formated_addr).strip('*')
+                parent_addr = pa(formated_addr)
 
-                if prev_addr != addr:
-                    prev_addr = addr
+                if prev_parent_addr != parent_addr:
+                    prev_parent_addr = parent_addr
                     candidate_addresses = caddr2geos(
                         formated_addr,
                         local_addr2formats,
@@ -88,14 +91,13 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             embedded_addr = copy.deepcopy(
                                 addr2formats[embedded_addr]
                                 )
-                            embedded_addr.append('*')  # pickleのformatは'*'が1つ少ない
+                            # pickleのformatは'*'が1つ少ない
+                            embedded_addr.append('*')
                             print('modn: ', len(embedded_addr))
                             print('\n')
 
                             # modifying
-                            group_list[group_i][_i]\
-                                [addr_first:addr_last+1]\
-                                = embedded_addr
+                            record[addr_first:addr_last+1] = embedded_addr
 
                             water_locate_n_num.append([group_i, 
                                                       _i,
