@@ -5,10 +5,13 @@ import api
 from watermark import detector
 import consts
 
+import pickle
+
 ########### config ############
 
 ORIGIN_FILE = consts.ORIGIN_FILE
 MODIFIED_FILE = consts.MODIFIED_FILE
+META_DICT_PICKLE = consts.META_DICT_PICKLE
 METHOD = consts.METHOD
 ATTR_LIST = consts.ATTR_LIST
 SENSITIVE = consts.SENSITIVE
@@ -20,11 +23,14 @@ MAX_BIN = consts.MAX_BIN
 _, origin_l = api.parsed_list(ORIGIN_FILE, header=True)
 _, modified_l = api.parsed_list(MODIFIED_FILE, header=True)
 
+with open(META_DICT_PICKLE) as f:
+    meta_dict = pickle.load(f)
+
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
 ########### detection ############
-detected_bin = detector(origin_l, modified_l, MAX_BIN, None,
+detected_bin = detector(origin_l, modified_l, MAX_BIN, meta_dict,
                         ATTR_LIST, group_by, WATER_LEN, METHOD)
 
 print(detected_bin)

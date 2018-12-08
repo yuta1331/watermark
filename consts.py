@@ -4,7 +4,8 @@
 ORIGIN_FILE = 'anonymized_data.csv'
 MODIFIED_FILE = 'watermarked_data.csv'
 
-WATERMARK = 'pickles/watermark.pkl'
+WATERMARK_PICKLE = 'pickles/watermark.pkl'
+META_DICT_PICKLE = 'pickles/meta_dict.pkl'
 
 # METHOD = 'embedding'
 METHOD = 'geo'

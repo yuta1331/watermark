@@ -13,7 +13,8 @@ import pickle
 
 INFILE = consts.ORIGIN_FILE
 OUTFILE = consts.MODIFIED_FILE
-WATERMARK = consts.WATERMARK
+WATERMARK_PICKLE = consts.WATERMARK_PICKLE
+META_DICT_PICKLE = consts.META_DICT_PICKLE
 METHOD = consts.METHOD
 ATTR_LIST = consts.ATTR_LIST
 SENSITIVE = consts.SENSITIVE
@@ -23,15 +24,22 @@ MAX_BIN = consts.MAX_BIN
 
 WATERMARK_GEN = False
 IS_ORIGIN_FILE_SORTED = True
+IS_META_DICT_GENERATED = False
 
 if WATERMARK_GEN is True:
     water_bin = ''.join([random.choice('01') for i in range(WATER_LEN)])
-    with open(WATERMARK, 'wb') as f:
+    with open(WATERMARK_PICKLE, 'wb') as f:
         pickle.dump(water_bin, f)
 else:
-    with open(WATERMARK, 'rb') as f:
+    with open(WATERMARK_PICKLE, 'rb') as f:
         water_bin = pickle.load(f)
 print(water_bin)
+
+if IS_META_DICT_GENERATED is True:
+    with open(META_DICT_PICKLE) as f:
+        meta_dict = pickle.load(f)
+else:
+    meta_dict = None
 
 ########### initial ############
 csv_header, datalist = api.parsed_list(INFILE, True)
@@ -47,7 +55,11 @@ if IS_ORIGIN_FILE_SORTED is False:
 
 ########### watermark ############
 meta_dict = watermarker(datalist, water_bin, MAX_BIN,
-                        None, ATTR_LIST, group_by, METHOD)
+                        meta_dict, ATTR_LIST, group_by, METHOD)
+
+if IS_META_DICT_GENERATED is False:
+    with open(META_DICT_PICKLE, 'wb') as f:
+        pickle.dump(meta_dict, f)
 
 ########### check ############
 
