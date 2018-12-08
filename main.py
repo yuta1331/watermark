@@ -51,10 +51,14 @@ meta_dict = watermarker(datalist, water_bin, MAX_BIN,
 
 ########### check ############
 
+# meta_dict = {group_i: i2b_dict}
+# i2b_dict = {_i: embed_num}
 embed_sum = 0
+keys = list(meta_dict.keys())
 for i, meta in enumerate(meta_dict.values()):
-    print(meta)
-    embed_sum += meta[3]
+    print('{:<3}'.format(keys[i]), meta)
+    for embed_num in meta.values():
+        embed_sum += embed_num
 print(embed_sum)
 
 '''

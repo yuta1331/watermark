@@ -4,6 +4,7 @@
 import pickle
 import math
 import copy
+from collections import OrderedDict
 # import gensim  # word2vec利用時
 
 import api
@@ -28,8 +29,9 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                 attr_list, group_by, method):
 
     # 埋め込み位置と何ビット埋め込んだか保存
-    # {group_i: {attr_i: embed_sum}}
-    meta_dict = dict()
+    # meta_dict = {group_i: i2b_dict}
+    # i2b_dict = {_i: embed_num}
+    meta_dict = OrderedDict()
 
     # datalistをgroup化
     group_list = api.datalist2groups(datalist, group_by)
@@ -51,9 +53,10 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 
         for group_i in embedded_location:
             group = group_list[group_i]  # 参照渡し
-            embed_sum = 0
 
             print('######## group_i: ', group_i, '########')
+
+            i2b_dict = dict()
 
             prev_parent_addr = ''
             for _i in range(len(group)):
@@ -103,18 +106,20 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             # modifying
                             record[addr_first:addr_last+1] = embedded_addr
 
-                            embed_sum += embed_num
+                            i2b_dict[_i] = embed_num
 
                         # water_bin has been run out
                         else:
-                            # {group_i: {attr_i: embed_sum}}
-                            meta_dict[group_i] = {attr_list.index('addr0'):
-                                                  embed_sum}
                             api.groups2datalist(datalist, group_list)
+
+                            # {group_i: {_i: embed_num}}
+                            if i2b_dict:
+                                meta_dict[group_i] = i2b_dict
                             return meta_dict
 
-            # {group_i: {attr_i: embed_sum}}
-            meta_dict[group_i] = {attr_list.index('addr0'): embed_sum}
+            # {group_i: {_i: embed_num}}
+            if i2b_dict:
+                meta_dict[group_i] = i2b_dict
 
 
 
