@@ -46,11 +46,18 @@ if IS_ORIGIN_FILE_SORTED is False:
 
 
 ########### watermark ############
-watermarker(datalist, water_bin, MAX_BIN,
-            None, ATTR_LIST, group_by, METHOD)
+meta_dict = watermarker(datalist, water_bin, MAX_BIN,
+                        None, ATTR_LIST, group_by, METHOD)
 
 ########### check ############
 
+embed_sum = 0
+for i, meta in enumerate(meta_dict.values()):
+    print(meta)
+    embed_sum += meta[3]
+print(embed_sum)
+
+'''
 # 最後尾の要素がグループ内の要素数
 # group_collection[i] = [time, sex, num_in_group]
 group_collection = list()
@@ -76,6 +83,7 @@ for group in group_collection:
     print(group)
 print('num_of_group:  ', len(group_collection))
 print('minimun group: ', min(nums_of_each_group))
+'''
 
 ########### output ############
 api.csv_composer(csv_header, datalist, OUTFILE)

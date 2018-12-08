@@ -28,8 +28,8 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                 attr_list, group_by, method):
 
     # 埋め込み位置と何ビット埋め込んだか保存
-    # [group_i, _i, embed_num]
-    water_locate_n_num = list()
+    # {group_i: {attr_i: embed_sum}}
+    meta_dict = dict()
 
     # datalistをgroup化
     group_list = api.datalist2groups(datalist, group_by)
@@ -51,6 +51,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 
         for group_i in embedded_location:
             group = group_list[group_i]  # 参照渡し
+            embed_sum = 0
 
             print('######## group_i: ', group_i, '########')
 
@@ -77,6 +78,9 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 
                         if len(water_bin) > 0:
                             print('######## i in group: ', _i, '########')
+
+                            embed_num = min(embed_num, len(water_bin))
+
                             embed_bin = water_bin[:embed_num]
                             water_bin = water_bin[embed_num:]
 
@@ -99,16 +103,22 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             # modifying
                             record[addr_first:addr_last+1] = embedded_addr
 
-                            water_locate_n_num.append([group_i, 
-                                                      _i,
-                                                      embed_num])
+                            embed_sum += embed_num
+
                         # water_bin has been run out
                         else:
+                            # {group_i: {attr_i: embed_sum}}
+                            meta_dict[group_i] = {attr_list.index('addr0'):
+                                                  embed_sum}
                             api.groups2datalist(datalist, group_list)
-                            return water_locate_n_num
+                            return meta_dict
+
+            # {group_i: {attr_i: embed_sum}}
+            meta_dict[group_i] = {attr_list.index('addr0'): embed_sum}
 
 
-def detector(org_l, mod_l, max_bin, water_locate_n_num,
+
+def detector(org_l, mod_l, max_bin, meta_dict,
              attr_list, group_by, water_len, method):
     detected_bin = ''
 
