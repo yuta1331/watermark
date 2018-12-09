@@ -12,6 +12,7 @@ from subset.addr_operation import local_addr2formatsgeos as la2fg
 from subset.addr_operation import candidate_addr2geos as caddr2geos
 from subset.addr_operation import addr_range_catcher as addr_range
 from subset.addr_operation import parent_addr as pa
+from subset.addr_operation import same_parent_addrs as spas
 
 
 ########## parameter ##########
@@ -122,9 +123,24 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                 meta_dict[group_i] = i2b_dict
 
 
+def same_group_as_org_g(org_g, mod_group_l, group_by):
+    for mod_g in mod_group_l:
+        for i in group_by:
+            if org_g[i] != mod_g[i]:
+                break
+        else:
+            # group_byの値が全て同じ場合
+            return mod_g
+    else:
+        # 全部breakされて引っかからなかった場合
+        return None
+
 
 def detector(org_l, mod_l, max_bin, meta_dict,
              attr_list, group_by, water_len, method):
+
+    # meta_dict = {group_i: {_i: embed_num}}
+
     detected_bin = ''
 
     # datalistをgroup化
@@ -144,13 +160,38 @@ def detector(org_l, mod_l, max_bin, meta_dict,
         local_addr2formats, local_addr2geos =\
             la2fg(attr_list, org_l, addr2formats, addr2geos)
 
-        for group_i in range(len(org_group_l)):
+        # 埋め込まれたグループのみ
+        for group_i in meta_dict.keys():
             org_g = org_group_l[group_i]
-            mod_g = mod_group_l[group_i]
 
-            for _i in range(len(org_g)):
-                org_addr = org_g[_i][addr_first:addr_last+1]
-                org_addr = ''.join(org_addr).strip('*')
+            # org_gとgroup_byの値が同じグループをmod_gから取り出す
+            mod_g = same_group_as_org_g(org_g, mod_group_l, group_by)
+            if mod_g is None:
+                print('Error: the same group is not found')
+                print('       group_i: ', group_i)
+                print('       group  : ', org_g)
+
+            for _i in meta_dict[group_i].keys():
+                formated_org_addr = org_g[_i][addr_first:addr_last+1]
+                org_parent_addr = pa(formated_org_addr)
+                # parent_addrが同じaddrをorg_gから取ってくる
+                # formatでなく連結でOK
+                same_parent_org_addrs = spas(
+                        org_parent_addr, org_g, 
+                        addr_first, addr_last
+                        )
+
+                # parent_addrが同じaddrをmod_gから取ってくる
+                # formatでなく連結でOK
+                same_parent_mod_addrs = spas(
+                        org_parent_addr, mod_g,
+                        addr_first, addr_last
+                        )
+
+                # 上二つから同一の値を削除していき、差分を発見する
+
+
+                org_addr = ''.join(formated_org_addr).strip('*')
 
                 mod_addr = mod_g[_i][addr_first:addr_last+1]
                 mod_addr = ''.join(mod_addr).strip('*')

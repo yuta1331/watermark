@@ -37,6 +37,16 @@ def parent_addr(formated_addr):
         return ''.join(formated_addr[:-1])
 
 
+def same_parent_addrs(parent_addr, group, addr_first, addr_last):
+    result = list()
+    for record_ in group:
+        formated_addr_ = record[addr_first:addr_last+1]
+        parent_addr_ = parent_addr(formated_addr_)
+        if parent_addr_ == parent_addr_:
+            result.append(''.join(formated_addr_).strip('*'))
+    return result
+
+
 ################ dictionaries ##################
 
 def formated_addr_from_addr(addr, addr2formats):
