@@ -28,31 +28,31 @@ def addr_range_catcher(attr_list):
             return first, last
 
 
-def parent_addr(formated_addr):
-    if formated_addr.index('*') == 1:
+def parent_addr(formatted_addr):
+    if formatted_addr.index('*') == 1:
         return None
-    elif '*' in formated_addr:
-        return ''.join(formated_addr[:formated_addr.index('*')-1])
+    elif '*' in formatted_addr:
+        return ''.join(formatted_addr[:formatted_addr.index('*')-1])
     else:
-        return ''.join(formated_addr[:-1])
+        return ''.join(formatted_addr[:-1])
 
 
 def same_parent_addrs(parent_addr, group, addr_first, addr_last):
     result = list()
     for record_ in group:
-        formated_addr_ = record[addr_first:addr_last+1]
-        parent_addr_ = parent_addr(formated_addr_)
+        formatted_addr_ = record[addr_first:addr_last+1]
+        parent_addr_ = parent_addr(formatted_addr_)
         if parent_addr_ == parent_addr_:
-            result.append(''.join(formated_addr_).strip('*'))
+            result.append(''.join(formatted_addr_).strip('*'))
     return result
 
 
 ################ dictionaries ##################
 
-def formated_addr_from_addr(addr, addr2formats):
+def formatted_addr_from_addr(addr, addr2formats):
     try:
-        formated_addr = addr2formats[addr]
-        return formated_addr
+        formatted_addr = addr2formats[addr]
+        return formatted_addr
 
     # KeyErrorの場合は知っているもの+知らないものにして返す
     except KeyError:
@@ -63,11 +63,11 @@ def formated_addr_from_addr(addr, addr2formats):
             extra = addr[-1] + extra
             addr = addr[:-1]
             if addr in addr2formats:
-                formated_addr = copy.deepcopy(addr2formats[addr])
-                for _i, _chunk in enumerate(formated_addr):
+                formatted_addr = copy.deepcopy(addr2formats[addr])
+                for _i, _chunk in enumerate(formatted_addr):
                     if _chunk == '*':
-                        formated_addr[_i] = extra
-                        return formated_addr
+                        formatted_addr[_i] = extra
+                        return formatted_addr
 
 
 def geo_from_addr(addr, addr2geos):
@@ -95,9 +95,9 @@ def local_addr2formatsgeos(attr_list, datalist, addr2formats, addr2geos):
 
     hierarchical_addrs = set()
     for addr in addr_set:
-        formated_addr = formated_addr_from_addr(addr, addr2formats)
-        for i in range(1, len(formated_addr)+1):
-            hierarchical_addrs.add(''.join(formated_addr[:i]).strip('*'))
+        formatted_addr = formatted_addr_from_addr(addr, addr2formats)
+        for i in range(1, len(formatted_addr)+1):
+            hierarchical_addrs.add(''.join(formatted_addr[:i]).strip('*'))
     '''
     hierarchical_addrs = sorted(hierarchical_addrs)
     '''
@@ -106,7 +106,7 @@ def local_addr2formatsgeos(attr_list, datalist, addr2formats, addr2geos):
     local_addr2geos = dict()
 
     for addr in hierarchical_addrs:
-        local_addr2formats[addr] = formated_addr_from_addr(addr, addr2formats)
+        local_addr2formats[addr] = formatted_addr_from_addr(addr, addr2formats)
         local_addr2geos[addr] = geo_from_addr(addr, addr2geos)
 
     local_addr2formats = OrderedDict(sorted(local_addr2formats.items(),
@@ -123,22 +123,22 @@ def geo_distance(geo1, geo2):
                      (geo1[1] - geo2[1]) ** 2)
 
 
-def candidate_addresses(formated_addr, addr2formats, addr2geos):
+def candidate_addresses(formatted_addr, addr2formats, addr2geos):
     # 候補がなければNoneを返す
 
-    if formated_addr[1] == '*':
+    if formatted_addr[1] == '*':
         return None
     else:
-        for existed_addr_num, _chunk in enumerate(formated_addr):
+        for existed_addr_num, _chunk in enumerate(formatted_addr):
             if _chunk == '*':
                 break
         cand_addrs = set()
 
         # 自分自身
-        cand_addrs.add(''.join(formated_addr).strip('*'))
+        cand_addrs.add(''.join(formatted_addr).strip('*'))
 
         # 一個上の階層
-        parent = formated_addr[:existed_addr_num-1]
+        parent = formatted_addr[:existed_addr_num-1]
         cand_addrs.add(''.join(parent).strip('*'))
 
         # 自分と同じ親を持つ同階層の値
@@ -158,17 +158,17 @@ def candidate_addresses(formated_addr, addr2formats, addr2geos):
         return cand_addrs
 
 
-def candidate_addr2geos(formated_addr, addr2formats,
+def candidate_addr2geos(formatted_addr, addr2formats,
                         addr2geos, distance=False):
     # 候補がなければNoneを返す
 
-    cand_addrs = candidate_addresses(formated_addr,
-                                     addr2formats, 
+    cand_addrs = candidate_addresses(formatted_addr,
+                                     addr2formats,
                                      addr2geos)
     if cand_addrs is None:
         return None
 
-    addr = ''.join(formated_addr).strip('*')
+    addr = ''.join(formatted_addr).strip('*')
     geo = addr2geos[addr]
 
     cand_addr2geos = dict()

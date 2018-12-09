@@ -62,14 +62,14 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
             prev_parent_addr = ''
             for _i in range(len(group)):
                 record = group[_i]  # 参照渡し
-                formated_addr = record[addr_first:addr_last+1]
-                addr = ''.join(formated_addr).strip('*')
-                parent_addr = pa(formated_addr)
+                formatted_addr = record[addr_first:addr_last+1]
+                addr = ''.join(formatted_addr).strip('*')
+                parent_addr = pa(formatted_addr)
 
                 if prev_parent_addr != parent_addr:
                     prev_parent_addr = parent_addr
                     candidate_addresses = caddr2geos(
-                        formated_addr,
+                        formatted_addr,
                         local_addr2formats,
                         local_addr2geos
                         )
@@ -172,8 +172,8 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                 print('       group  : ', org_g)
 
             for _i in meta_dict[group_i].keys():
-                formated_org_addr = org_g[_i][addr_first:addr_last+1]
-                org_parent_addr = pa(formated_org_addr)
+                formatted_org_addr = org_g[_i][addr_first:addr_last+1]
+                org_parent_addr = pa(formatted_org_addr)
                 # parent_addrが同じaddrをorg_gから取ってくる
                 # formatでなく連結でOK
                 same_parent_org_addrs = spas(
@@ -191,7 +191,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                 # 上二つから同一の値を削除していき、差分を発見する
 
 
-                org_addr = ''.join(formated_org_addr).strip('*')
+                org_addr = ''.join(formatted_org_addr).strip('*')
 
                 mod_addr = mod_g[_i][addr_first:addr_last+1]
                 mod_addr = ''.join(mod_addr).strip('*')
