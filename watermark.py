@@ -9,10 +9,10 @@ from collections import OrderedDict
 
 import api
 from subset.addr_operation import local_addr2formatsgeos as la2fg
-from subset.addr_operation import candidate_addr2geos as caddr2geos
+from subset.addr_operation import candidate_addr2geos as ca2g
 from subset.addr_operation import addr_range_catcher as addr_range
 from subset.addr_operation import parent_addr as pa
-from subset.addr_operation import same_parent_addrs as spas
+from subset.addr_operation import addrs_with_same_parent as asp
 
 
 ########## parameter ##########
@@ -23,6 +23,7 @@ ADDR2FORMAT_PKL = 'pickles/addr2format.pkl'
 ADDR2GEO_PKL = 'pickles/addr2geo.pkl'
 
 BIT_LEN = 2
+
 
 ########## method ###########
 
@@ -37,7 +38,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
     # datalistをgroup化
     group_list = api.datalist2groups(datalist, group_by)
 
-    if embedded_location == None:
+    if embedded_location is None:
         embedded_location = list(range(len(group_list)))
 
     if method == 'geo':
@@ -68,13 +69,13 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 
                 if prev_parent_addr != parent_addr:
                     prev_parent_addr = parent_addr
-                    candidate_addresses = caddr2geos(
+                    candidate_addresses = ca2g(
                         formatted_addr,
                         local_addr2formats,
                         local_addr2geos
                         )
 
-                    if candidate_addresses != None:
+                    if candidate_addresses is not None:
                         embed_num = min(
                             max_bin,
                             int(math.log2(len(candidate_addresses)))
@@ -126,7 +127,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 def same_group_as_org_g(org_g, mod_group_l, group_by):
     for mod_g in mod_group_l:
         for i in group_by:
-            if org_g[i] != mod_g[i]:
+            if org_g[0][i] != mod_g[0][i]:
                 break
         else:
             # group_byの値が全て同じ場合
@@ -141,7 +142,8 @@ def detector(org_l, mod_l, max_bin, meta_dict,
 
     # meta_dict = {group_i: {_i: embed_num}}
 
-    detected_bin = ''
+    extracted_bin = ''
+    extract_num = 0
 
     # datalistをgroup化
     org_group_l = api.datalist2groups(org_l, group_by)
@@ -162,6 +164,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
 
         # 埋め込まれたグループのみ
         for group_i in meta_dict.keys():
+            print('######## group_i: ', group_i, ' ########')
             org_g = org_group_l[group_i]
 
             # org_gとgroup_byの値が同じグループをmod_gから取り出す
@@ -173,55 +176,65 @@ def detector(org_l, mod_l, max_bin, meta_dict,
 
             for _i in meta_dict[group_i].keys():
                 formatted_org_addr = org_g[_i][addr_first:addr_last+1]
+                org_addr = ''.join(formatted_org_addr).strip('*')
                 org_parent_addr = pa(formatted_org_addr)
+
                 # parent_addrが同じaddrをorg_gから取ってくる
                 # formatでなく連結でOK
-                same_parent_org_addrs = spas(
-                        org_parent_addr, org_g, 
+                org_addrs_with_same_parent = asp(
+                        org_parent_addr, org_g,
                         addr_first, addr_last
                         )
 
                 # parent_addrが同じaddrをmod_gから取ってくる
                 # formatでなく連結でOK
-                same_parent_mod_addrs = spas(
+                mod_addrs_with_same_parent = asp(
                         org_parent_addr, mod_g,
                         addr_first, addr_last
                         )
 
                 # 上二つから同一の値を削除していき、差分を発見する
+                org_addrs_with_same_parent.remove(org_addr)
+                tmp_org_addrs = copy.deepcopy(org_addrs_with_same_parent)
+                for tmp_org_addr in tmp_org_addrs:
+                    if tmp_org_addr in mod_addrs_with_same_parent:
+                        org_addrs_with_same_parent.remove(tmp_org_addr)
+                        mod_addrs_with_same_parent.remove(tmp_org_addr)
 
+                if len(mod_addrs_with_same_parent) > 0:
+                    # org_addrとmod_addrs_with_same_parent[0]から
+                    # 埋め込みビットを抽出
+                    # org_addrの編集候補を並べる
+                    # mod_addrs_with_same_parent[0]がそのどれに当たるか
+                    candidate_addresses = ca2g(
+                        formatted_org_addr,
+                        local_addr2formats,
+                        local_addr2geos
+                        )
 
-                org_addr = ''.join(formatted_org_addr).strip('*')
-
-                mod_addr = mod_g[_i][addr_first:addr_last+1]
-                mod_addr = ''.join(mod_addr).strip('*')
-
-
-
-
-        for i_data, org_record in enumerate(org_l):
-            if len(detected_bin) == 256:
-                break
-
-            # 住所はまとめてくっつける（*なし）
-            org_addr = joined_addr(addr_first, addr_last, org_record)
-            mod_addr = joined_addr(addr_first, addr_last, mod_l[i_data])
-
-            num_cand = 2**BIT_LEN
-            if org_addr != mod_addr:
-                num_changed += 1
-
-                # 付け焼刃で[1:]
-                nearest_addresses = nearest_addrs(org_record[addr_first:addr_last+1],
-                                                  num_cand+1,
-                                                  addr2formats,
-                                                  addr2geos)[1:]
-
-                rank = 0
-                for i, cand_address in enumerate(nearest_addresses):
-                    if cand_address == mod_addr:
-                        rank = i
-                        break
-
-                detected_bin += format(rank, 'b').zfill(BIT_LEN)
-        print(num_changed)
+                    candidate_mod_addr = mod_addrs_with_same_parent[0]
+                    print('######## i in group: ', _i, ' ########')
+                    if candidate_mod_addr in candidate_addresses:
+                        embed_num = meta_dict[group_i][_i]
+                        extracted_chunk = candidate_addresses.\
+                            index(candidate_mod_addr)
+                        extracted_chunk = format(
+                            extracted_chunk,
+                            '0>' + str(embed_num) + 'b'
+                            )
+                        if embed_num < len(extracted_chunk):
+                            extracted_chunk = extracted_chunk[:embed_num]
+                        print('embe: ', extracted_chunk)
+                        print('prev: ', org_addr)
+                        print('modi: ', mod_addrs_with_same_parent)
+                        print('\n')
+                        extracted_bin += extracted_chunk
+                        extract_num += meta_dict[group_i][_i]
+                    else:
+                        extracted_bin += format(
+                            0,
+                            '0>' + str(meta_dict[group_i][_i]) + 'b'
+                            )
+                        extract_num += meta_dict[group_i][_i]
+    print('extract num: ', extract_num)
+    return extracted_bin

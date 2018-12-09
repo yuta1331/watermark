@@ -28,7 +28,7 @@ def addr_range_catcher(attr_list):
             return first, last
 
 
-def parent_addr(formatted_addr):
+def parent_addr(formatted_addr, detect=False):
     if formatted_addr.index('*') == 1:
         return None
     elif '*' in formatted_addr:
@@ -37,13 +37,13 @@ def parent_addr(formatted_addr):
         return ''.join(formatted_addr[:-1])
 
 
-def same_parent_addrs(parent_addr, group, addr_first, addr_last):
+def addrs_with_same_parent(parent_addr_, group, addr_first, addr_last):
     result = list()
-    for record_ in group:
-        formatted_addr_ = record[addr_first:addr_last+1]
-        parent_addr_ = parent_addr(formatted_addr_)
-        if parent_addr_ == parent_addr_:
-            result.append(''.join(formatted_addr_).strip('*'))
+    for _record in group:
+        _formatted_addr = _record[addr_first:addr_last+1]
+        _parent_addr = parent_addr(_formatted_addr)
+        if _parent_addr == parent_addr_:
+            result.append(''.join(_formatted_addr).strip('*'))
     return result
 
 
@@ -139,7 +139,7 @@ def candidate_addresses(formatted_addr, addr2formats, addr2geos):
 
         # 一個上の階層
         parent = formatted_addr[:existed_addr_num-1]
-        cand_addrs.add(''.join(parent).strip('*'))
+        # cand_addrs.add(''.join(parent).strip('*'))
 
         # 自分と同じ親を持つ同階層の値
         for addr in addr2formats.values():
@@ -166,6 +166,9 @@ def candidate_addr2geos(formatted_addr, addr2formats,
                                      addr2formats,
                                      addr2geos)
     if cand_addrs is None:
+        return None
+
+    if len(cand_addrs) == 1:
         return None
 
     addr = ''.join(formatted_addr).strip('*')
