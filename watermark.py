@@ -55,10 +55,14 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 
         for group_i in embedded_location:
             group = group_list[group_i]  # 参照渡し
+            org_index_l = api.sorted_list(group,
+                                          list(range(addr_first, addr_last+1)),
+                                          index=True
+                                          )
 
             print('######## group_i: ', group_i, '########')
 
-            i2b_dict = dict()
+            i2b_dict = OrderedDict()
 
             prev_parent_addr = ''
             for _i in range(len(group)):
@@ -108,7 +112,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             # modifying
                             record[addr_first:addr_last+1] = embedded_addr
 
-                            i2b_dict[_i] = embed_num
+                            i2b_dict[org_index_l[_i]] = embed_num
 
                         # water_bin has been run out
                         else:

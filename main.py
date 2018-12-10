@@ -23,7 +23,7 @@ WATER_LEN = consts.WATER_LEN
 MAX_BIN = consts.MAX_BIN
 
 WATERMARK_GEN = False
-IS_ORIGIN_FILE_SORTED = True
+IS_ORIGIN_FILE_SORTED = False
 IS_META_DICT_GENERATED = False
 
 if WATERMARK_GEN is True:
@@ -46,11 +46,6 @@ csv_header, datalist = api.parsed_list(INFILE, True)
 
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
-
-# anonymized dataをソートして保存
-if IS_ORIGIN_FILE_SORTED is False:
-    datalist = api.sorted_list(datalist, group_by)
-    api.csv_composer(csv_header, datalist, INFILE)
 
 
 ########### watermark ############

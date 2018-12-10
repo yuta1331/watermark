@@ -28,10 +28,10 @@ def addr_range_catcher(attr_list):
             return first, last
 
 
-def parent_addr(formatted_addr, detect=False):
-    if formatted_addr.index('*') == 1:
-        return None
-    elif '*' in formatted_addr:
+def parent_addr(formatted_addr):
+    if '*' in formatted_addr:
+        if formatted_addr.index('*') == 1:
+            return None
         return ''.join(formatted_addr[:formatted_addr.index('*')-1])
     else:
         return ''.join(formatted_addr[:-1])
@@ -129,32 +129,20 @@ def candidate_addresses(formatted_addr, addr2formats, addr2geos):
     if formatted_addr[1] == '*':
         return None
     else:
-        for existed_addr_num, _chunk in enumerate(formatted_addr):
-            if _chunk == '*':
-                break
         cand_addrs = set()
 
         # 自分自身
         cand_addrs.add(''.join(formatted_addr).strip('*'))
 
         # 一個上の階層
-        parent = formatted_addr[:existed_addr_num-1]
+        parent = parent_addr(formatted_addr)
         # cand_addrs.add(''.join(parent).strip('*'))
 
         # 自分と同じ親を持つ同階層の値
-        for addr in addr2formats.values():
-            for _i, _chunk in enumerate(parent):
-                if _chunk != addr[_i]:
-                    break
-            else:
-                # 親の一つ下の値のみあるものを取ってくる
-                if len(parent) == len(addr):
-                    return cand_addrs
-                elif len(parent) == len(addr) - 1:
-                    cand_addrs.add(''.join(addr).strip('*'))
-                elif ((addr[len(parent)] != '*') and
-                        (addr[len(parent)+1] == '*')):
-                    cand_addrs.add(''.join(addr).strip('*'))
+        for _addr in addr2formats.values():
+            _parent = parent_addr(_addr)
+            if _parent == parent:
+                cand_addrs.add(''.join(_addr).strip('*'))
         return cand_addrs
 
 
@@ -227,3 +215,9 @@ if __name__ == '__main__':
     for i in local_addr2geos:
         print(i, local_addr2formats[i])
     '''
+    print('######## parent ########')
+    for record in datalist:
+        addr = record[addr_first:addr_last+1]
+        parent = parent_addr(addr)
+        print('origin: ', addr)
+        print('parent: ', parent)
