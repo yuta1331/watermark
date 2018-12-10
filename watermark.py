@@ -42,7 +42,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
         embedded_location = list(range(len(group_list)))
 
     if method == 'geo':
-        print('Watermarking with GeoLocation')
+        # print('Watermarking with GeoLocation')
         addr_first, addr_last = addr_range(attr_list)
         with open(ADDR2FORMAT_PKL, 'rb') as f:
             addr2formats = pickle.load(f)
@@ -55,24 +55,44 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 
         for group_i in embedded_location:
             group = group_list[group_i]  # 参照渡し
+            i2b_dict = OrderedDict()
+            '''
             org_index_l = api.sorted_list(group,
                                           list(range(addr_first, addr_last+1)),
                                           index=True
                                           )
-
+            '''
             print('######## group_i: ', group_i, '########')
 
-            i2b_dict = OrderedDict()
+            # append index and parent
+            for index, record in enumerate(group):  # recordは参照渡し
+                record.append(index)
+                parent = pa(record[addr_first:addr_last+1])
+                record.append(parent)
 
-            prev_parent_addr = ''
-            for _i in range(len(group)):
-                record = group[_i]  # 参照渡し
-                formatted_addr = record[addr_first:addr_last+1]
-                addr = ''.join(formatted_addr).strip('*')
-                parent_addr = pa(formatted_addr)
+            # parentでグループ分け
+            # 追加時にparentはpopしちゃう
+            group_by_parent = OrderedDict()
+            for record in group:
+                if record[-1] in group_by_parent.keys():
+                    # recordは参照渡し
+                    group_by_parent[record.pop()].append(record)
+                else:
+                    # recordは参照渡し
+                    group_by_parent[record.pop()] = [record]
 
-                if prev_parent_addr != parent_addr:
-                    prev_parent_addr = parent_addr
+            for parent_group in group_by_parent.values():
+                # parent_groupは参照渡し
+
+                for record in parent_group:  # 参照渡し
+
+                    # indexがpopされているということ
+                    if len(record) == len(attr_list):
+                        break
+
+                    formatted_addr = record[addr_first:addr_last+1]
+                    addr = ''.join(formatted_addr).strip('*')
+
                     candidate_addresses = ca2g(
                         formatted_addr,
                         local_addr2formats,
@@ -86,7 +106,9 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             )
 
                         if len(water_bin) > 0:
-                            print('######## i in group: ', _i, '########')
+                            print('######## i in group: ',
+                                  record[-1],
+                                  '########')
 
                             embed_num = min(embed_num, len(water_bin))
 
@@ -112,7 +134,9 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             # modifying
                             record[addr_first:addr_last+1] = embedded_addr
 
-                            i2b_dict[org_index_l[_i]] = embed_num
+                            i2b_dict[record[-1]] = embed_num
+                            for tmp_record in parent_group:
+                                del tmp_record[-1]
 
                         # water_bin has been run out
                         else:

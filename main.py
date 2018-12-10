@@ -33,7 +33,7 @@ if WATERMARK_GEN is True:
 else:
     with open(WATERMARK_PICKLE, 'rb') as f:
         water_bin = pickle.load(f)
-print(water_bin)
+# print(water_bin)
 
 if IS_META_DICT_GENERATED is True:
     with open(META_DICT_PICKLE) as f:
