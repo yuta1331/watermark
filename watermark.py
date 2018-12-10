@@ -56,13 +56,8 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
         for group_i in embedded_location:
             group = group_list[group_i]  # 参照渡し
             i2b_dict = OrderedDict()
-            '''
-            org_index_l = api.sorted_list(group,
-                                          list(range(addr_first, addr_last+1)),
-                                          index=True
-                                          )
-            '''
-            print('######## group_i: ', group_i, '########')
+
+            # print('######## group_i: ', group_i, '########')
 
             # append index and parent
             for index, record in enumerate(group):  # recordは参照渡し
@@ -106,9 +101,11 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             )
 
                         if len(water_bin) > 0:
+                            '''
                             print('######## i in group: ',
                                   record[-1],
                                   '########')
+                            '''
 
                             embed_num = min(embed_num, len(water_bin))
 
@@ -128,7 +125,6 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                                 )
                             # pickleのformatは'*'が1つ少ない
                             embedded_addr.append('*')
-                            print('modn: ', len(embedded_addr))
                             print('\n')
 
                             # modifying
@@ -192,7 +188,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
 
         # 埋め込まれたグループのみ
         for group_i in meta_dict.keys():
-            print('######## group_i: ', group_i, ' ########')
+            # print('######## group_i: ', group_i, ' ########')
             org_g = org_group_l[group_i]
 
             # org_gとgroup_byの値が同じグループをmod_gから取り出す
@@ -241,7 +237,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                         )
 
                     candidate_mod_addr = mod_addrs_with_same_parent[0]
-                    print('######## i in group: ', _i, ' ########')
+                    # print('######## i in group: ', _i, ' ########')
                     if candidate_mod_addr in candidate_addresses:
                         embed_num = meta_dict[group_i][_i]
                         extracted_chunk = candidate_addresses.\
