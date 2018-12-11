@@ -136,6 +136,8 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
 
                         # water_bin has been run out
                         else:
+                            for record in datalist:
+                                del record[len(attr_list):]
                             api.groups2datalist(datalist, group_list)
 
                             # {group_i: {_i: embed_num}}
