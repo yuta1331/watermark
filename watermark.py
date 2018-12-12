@@ -190,7 +190,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
 
         # 埋め込まれたグループのみ
         for group_i in meta_dict.keys():
-            # print('######## group_i: ', group_i, ' ########')
+            print('######## group_i: ', group_i, ' ########')
             org_g = org_group_l[group_i]
 
             # org_gとgroup_byの値が同じグループをmod_gから取り出す
@@ -199,6 +199,13 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                 print('Error: the same group is not found')
                 print('       group_i: ', group_i)
                 print('       group  : ', org_g)
+                for embed_num in meta_dict[group_i].values():
+                    extracted_bin += format(
+                            0,
+                            '0>' + str(embed_num) + 'b'
+                            )
+                    extract_num += embed_num
+                continue
 
             for _i in meta_dict[group_i].keys():
                 formatted_org_addr = org_g[_i][addr_first:addr_last+1]
@@ -256,11 +263,11 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                         print('\n')
                         extracted_bin += extracted_chunk
                         extract_num += meta_dict[group_i][_i]
-                    else:
-                        extracted_bin += format(
-                            0,
-                            '0>' + str(meta_dict[group_i][_i]) + 'b'
-                            )
-                        extract_num += meta_dict[group_i][_i]
+                else:
+                    extracted_bin += format(
+                        0,
+                        '0>' + str(meta_dict[group_i][_i]) + 'b'
+                        )
+                    extract_num += meta_dict[group_i][_i]
     print('extract num: ', extract_num)
     return extracted_bin
