@@ -14,6 +14,7 @@ import csv
 import pickle
 import re
 import copy
+import os
 
 # in-out file parameter
 addr_file = 'addr.csv'
@@ -181,6 +182,9 @@ addr2geo_dict = OrderedDict(sorted(addr2geo_dict.items()))
 
 
 ############### pickle output ##################
+
+if os.path.isdir('../pickles') is False:
+    os.mkdir('../pickles')
 
 with open(addr2format_pkl, 'wb') as f:
     pickle.dump(addr2format_dict, f)
