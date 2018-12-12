@@ -12,5 +12,5 @@ http://nlftp.mlit.go.jp/cgi-bin/isj/dls/_choose_method.cgi
 
 これを`addr.csv`とする。
 
-次に`geomaker.py`を実行する。<br>
-そうすると、rootに`addr2format.pkl`と`addr2geo.pkl`が作成される。
+次に、`geomaker.py`を実行する。<br>
+そうすると、`watermark/pickles/`に`addr2format.pkl`と`addr2geo.pkl`が作成される。
