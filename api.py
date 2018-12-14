@@ -88,7 +88,7 @@ if __name__ == '__main__':
                  'birth', 'time']  # attributes of INFILE
     GROUP_BY_ATTR = ['time', 'tel', 'sex']  # これを元にグループ化
     group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
-    _, datalist = parsed_list('anonymized_data.csv', header=True)
+    _, datalist = parsed_list('csvs/anonymized_data.csv', header=True)
     group_list = datalist2groups(datalist, group_by)
 
     for equal in group_list:

@@ -7,8 +7,8 @@ import sys
 sys.path.append('../')
 import api
 
-INFILE = '../anonymized_data.csv'
-OUTFILE = '../watermarked_data.csv'
+INFILE = '../csvs/anonymized_data.csv'
+OUTFILE = '../csvs/watermarked_data.csv'
 
 csv_header, org_set = api.parsed_list(INFILE, True)
 _, mod_set = api.parsed_list(OUTFILE, True)

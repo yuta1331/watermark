@@ -1,8 +1,8 @@
 #! usr/bin/env python
 # -*- coding: utf-8 -*-
 
-ORIGIN_FILE = 'anonymized_data.csv'
-MODIFIED_FILE = 'watermarked_data.csv'
+ORIGIN_FILE = 'csvs/anonymized_data.csv'
+MODIFIED_FILE = 'csvs/watermarked_data.csv'
 
 WATERMARK_PICKLE = 'pickles/watermark.pkl'
 META_DICT_PICKLE = 'pickles/meta_dict.pkl'

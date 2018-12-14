@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     ADDR2FORMAT_PKL = '../pickles/addr2format.pkl'
     ADDR2GEO_PKL = '../pickles/addr2geo.pkl'
-    INFILE = '../anonymized_data.csv'
+    INFILE = '../csvs/anonymized_data.csv'
     ATTR_LIST = ['sex', 'tel',
                  'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
                  'birth', 'time']  # attributes of INFILE
