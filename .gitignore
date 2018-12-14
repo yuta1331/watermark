@@ -8,3 +8,4 @@ __pycache__/*
 *.bin
 *.pkl
 !.gitkeep
+jupyter/.ipynb_checkpoints/*
