@@ -4,10 +4,12 @@
 from copy import deepcopy
 import subset
 
+
 def quasi_row(row, sensitive):
     if sensitive + 1 < len(row):
         return row[:sensitive] + row[sensitive + 1:]
     return row[:sensitive]
+
 
 def quasi_list(datalist, sensitive):
     if sensitive == None: return deepcopy(datalist)
@@ -16,8 +18,9 @@ def quasi_list(datalist, sensitive):
         quasilist.append(quasi_row(datalist[i], sensitive))
     return quasilist
 
-def freq_list(datalist, sensitive): # calculate the frequency of each q*-block
-                                    # 最後尾要素にfrequency
+
+def freq_list(datalist, sensitive):  # calculate the frequency of each q*-block
+                                     # 最後尾要素にfrequency
     quasilist = quasi_list(datalist, sensitive)
     i = 0
     while i < len(quasilist):
@@ -32,6 +35,7 @@ def freq_list(datalist, sensitive): # calculate the frequency of each q*-block
         i += 1
     return quasilist
 
+
 def attr_search(freqlist, data, attr_i):
     for i, attr in enumerate(freqlist):
         if data[attr_i] == attr[0]:
@@ -40,18 +44,22 @@ def attr_search(freqlist, data, attr_i):
     freqlist.append([data[attr_i], 1]) # Unless objective attr is found
     return
 
+
 def freq_attr_list(datalist, attr_i): # [value, freq]
     freq_attrlist = list()
     for data in datalist: # datalistを行ごとに読み込む
         attr_search(freq_attrlist, data, attr_i)
     return freq_attrlist
 
+
 def calc_k(freqlist):
     min_k = freqlist[0][-1]
     for li in freqlist[1:]: min_k = min(min_k, li[-1])
     return min_k
 
+
 def k_judge(min_k, k): return min_k >= k
+
 
 def masking(attr, value): # これ以上一般化できない場合はそのままvalueを返す．
     if attr == 'sex': return value
@@ -104,6 +112,7 @@ def masking(attr, value): # これ以上一般化できない場合はそのま�
             else: return value[:mask-1] + '*' + value[mask:]
         else: return value[:slash]
 
+
 def address_masking(addr_attr, address):
 # address = ['群馬県', '安中市', '岩井', '1-17-1', 'タワー岩井31']
     try:
@@ -113,9 +122,11 @@ def address_masking(addr_attr, address):
     address[i] = masking(addr_attr[i], address[i])
     return address
 
+
 # kを満たしていないq*-blockを取り出す
 def no_secure_blocks(freq_list, k):
     return [x[:-1] for x in freq_list if x[-1] < k]
+
 
 # 属性ごとでkを満たしていないblockを取り出す
 def no_secure_attrs(attr_first, attr_last, datalist, k):
@@ -124,6 +135,7 @@ def no_secure_attrs(attr_first, attr_last, datalist, k):
         attrlist_in_datalist.append(data[attr_first:attr_last+1])
     attr_freq_list = freq_list(attrlist_in_datalist, None)
     return no_secure_blocks(attr_freq_list, k)
+
 
 # 住所はひとかたまりで一般化すべきなのでここでindexを得る
 def address_grouper(attr_list):
@@ -138,6 +150,7 @@ def address_grouper(attr_list):
         if 'addr' in attr_list[i]:
             last = i
             return first, last
+
 
 def datafly(datalist, attr_list, sensitive, k):
 
@@ -157,11 +170,10 @@ def datafly(datalist, attr_list, sensitive, k):
     while len(nosecure_addrs) > 0:
         for i, data in enumerate(datalist):
             if data[addr_first:addr_last+1] in nosecure_addrs:
-                tmp = address_masking(attr_list[addr_first:addr_last+1], \
+                tmp = address_masking(attr_list[addr_first:addr_last+1],
                                       data[addr_first:addr_last+1])
                 datalist[i][addr_first:addr_last+1] = tmp
-        nosecure_addrs = \
-            no_secure_attrs(addr_first, addr_last, datalist, k)
+        nosecure_addrs = no_secure_attrs(addr_first, addr_last, datalist, k)
 
 
     '''# for debug
@@ -184,7 +196,8 @@ def datafly(datalist, attr_list, sensitive, k):
             if len(nosecure_attrs) == 1: break
             for i, data in enumerate(datalist):
                 if [data[attr_i]] in nosecure_attrs:
-                    datalist[i][attr_i] = masking(attr_list[attr_i], data[attr_i])
+                    datalist[i][attr_i] = masking(attr_list[attr_i],
+                                                  data[attr_i])
             nosecure_attrs = no_secure_attrs(attr_i, attr_i, datalist, k)
 
         # for debug
@@ -227,6 +240,7 @@ def datafly(datalist, attr_list, sensitive, k):
             if len(rhs) < k: return datalist # 懸念
             else: return mondrian(ihs, k, attr_i), mondrian(rhs, k, attr_i)
 
+
 def same_judge_addr(addresses, n):
     # if values are all the same, allsame = 1
     for i in range(n-1):
@@ -234,12 +248,14 @@ def same_judge_addr(addresses, n):
             return 0
     return 1
 
+
 def same_judge_attr(datalist, attr_i, n):
     # if values are all the same, allsame = 1
     for i in range(n-1):
         if datalist[i][attr_i] != datalist[i+1][attr_i]:
             return 0
     return 1
+
 
 def uniformer(datalist, attr_list, sensitive):
     # まずは住所
@@ -325,8 +341,8 @@ def sub_easy_anonymizer(datalist, sensitive, k, attr_list):
             i += k
     return result
 
+
 def easy_anonymizer(datalist, sensitive, k, attr_list, priority):
-    n = len(datalist)
     subset.all_sorted_list(datalist, None, priority)
 
     # 女の最後を得る
@@ -339,7 +355,6 @@ def easy_anonymizer(datalist, sensitive, k, attr_list, priority):
 
 
 if __name__ == '__main__':
-    import subset
     infile = 'original_data.csv'
     sensitive = 9
     k = 3

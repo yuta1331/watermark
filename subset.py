@@ -3,19 +3,19 @@
 
 import csv
 
+
 def all_sorted_list(datalist, sensitive, priority):
-    if priority == None:
+    if priority is None:
         priority = list(range(len(datalist[0])))
 
-    if sensitive == None:
+    if sensitive is None:
         for i in priority[::-1]:
-            datalist.sort(key=lambda x:x[i])
+            datalist.sort(key=lambda x: x[i])
         return datalist
     for i in priority[::-1]:
         if i != sensitive:
-            datalist.sort(key=lambda x:x[i])
+            datalist.sort(key=lambda x: x[i])
     return datalist
-
 
 
 ############ API ##############
@@ -35,6 +35,7 @@ def parsed_list(infile, sensitive):
     init = datalist[0]
     datalist = datalist[1:]
     return init, datalist
+
 
 def csv_composer(init_row, outlist, sensitive, outfile):
     outlist = all_sorted_list(outlist, sensitive, None)
