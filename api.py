@@ -4,20 +4,12 @@
 import csv
 
 
-def sorted_list(datalist, priority, index=False):
+def sorted_list(datalist, priority, ignored_list=[]):
     if priority is None:
         priority = list(range(len(datalist[0])))
-    if index is True:
-        for _i, data in enumerate(datalist):
-            data.append(_i)
-        for i in priority[::-1]:
-            datalist.sort(key=lambda x: x[i])
-        data_index = list()
-        for data in datalist:
-            data_index.append(data.pop())
-        return data_index
     for i in priority[::-1]:
-        datalist.sort(key=lambda x: x[i])
+        if i not in ignored_list:
+            datalist.sort(key=lambda x: x[i])
     return datalist
 
 
@@ -70,7 +62,6 @@ def parsed_list(infile, header=False):
 
 
 def csv_composer(init_row, outlist, outfile):
-    # outlist = sorted_list(outlist, None)
     try:
         with open(outfile, 'w') as csvfile:
             writer = csv.writer(csvfile, lineterminator='\n')

@@ -44,6 +44,10 @@ else:
 ########### initial ############
 csv_header, datalist = api.parsed_list(INFILE, True)
 
+# sequential number の準備
+seq_index = csv_header.index('seq')
+ATTR_LIST.insert(seq_index, 'seq')
+
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
