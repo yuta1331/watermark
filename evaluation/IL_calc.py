@@ -20,14 +20,9 @@ attr_list = consts.ATTR_LIST
 attr_list.append('seq')
 addr_attr = ['addr0', 'addr1', 'addr2', 'addr3', 'addr4']
 
-with open('../pickles/addr2format.pkl', 'rb') as f:
-    addr2formats = pickle.load(f)
-with open('../pickles/addr2geo.pkl', 'rb') as f:
-    addr2geos = pickle.load(f)
-
 
 # categorical tree
-def loss(org_value, mod_value, attr):
+def loss(org_value, mod_value, attr, addr2formats, addr2geos):
     if org_value == mod_value:
         return 0
     if attr == 'addr':
@@ -169,12 +164,18 @@ class GeneralTree:
         return numerator / denominator
 
     '''
-    def extended_IL_inverse(self, org_value_l, ano_value_l, wat_value_l):
+    def extended_IL_inverse(self, 
+                            org_value_l,
+                            ano_value_l,
+                            wat_value_l,
+                            addr2formats,
+                            addr2geos):
         denominator = self.ratio_inverse(org_value_l)
         numerator = denominator - self.ratio_inverse(mod_value_l)
         parent_IL = self.search(ano_value_l[:-1])\
                         .ratio_inverse(ano_value_l[-1])
-        parent_loss = loss(ano_value_l, wat_value_l, attr)
+        parent_loss = loss(ano_value_l, wat_value_l,
+                           attr, addr2formats, addr2geos)
         numerator += parent_IL * parent_loss
         return numerator / denominator
     '''
@@ -216,7 +217,12 @@ def general_addrs(addr_attr, addr_l):
 
 
 class AddrTree(GeneralTree):
-    def extended_IL_inverse(self, org_addr, ano_addr, wat_addr):
+    def extended_IL_inverse(self, 
+                            org_addr,
+                            ano_addr,
+                            wat_addr,
+                            addr2formats,
+                            addr2geos):
         general_org_addr = general_addr(addr_attr, org_addr)
         general_ano_addr = general_addr(addr_attr, ano_addr)
         general_wat_addr = general_addr(addr_attr, wat_addr)
@@ -229,7 +235,8 @@ class AddrTree(GeneralTree):
         numerator = denominator - self.ratio_inverse(general_ano_addr)
         parent_IL = self.search(general_ano_addr[:-1])\
                         .ratio_inverse(general_ano_addr[-1])
-        parent_loss = loss(ano_addr, wat_addr, 'addr')
+        parent_loss = loss(ano_addr, wat_addr, 'addr', 
+                           addr2formats, addr2geos)
         numerator += parent_IL * parent_loss
 
         return numerator / denominator
@@ -246,7 +253,8 @@ def insert_empty(dataset):
             dataset.insert(i, ['empty', i])
 
 
-def fix_addr(dataset, addr_first, addr_last):  # dataset has been inserted 'empty'
+def fix_addr(dataset, addr_first, addr_last):  
+    # dataset has been inserted 'empty'
     addr_l = list()
     for record in dataset:
         if record[0] == 'empty':
@@ -256,7 +264,7 @@ def fix_addr(dataset, addr_first, addr_last):  # dataset has been inserted 'empt
     return addr_l
 
 
-def IL_calc(org_l, mod_l, wat_l, attr_list):
+def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos):
     # sequential numberをintに
     cast_sequential_num2int(org_l)
     cast_sequential_num2int(mod_l)
@@ -310,7 +318,9 @@ def IL_calc(org_l, mod_l, wat_l, attr_list):
             IL_list.append(addr_tree\
                            .extended_IL_inverse(org_addr,
                                                 mod_addr,
-                                                wat_addr))
+                                                wat_addr,
+                                                addr2formats,
+                                                addr2geos))
 
     return IL_list, mod_addr_l
 
@@ -324,19 +334,27 @@ if __name__ == '__main__':
     _, anonymized_list = api.parsed_list(anonymized_file, True)
     _, watermarked_list = api.parsed_list(watermarked_file, True)
 
+    with open('../pickles/addr2format.pkl', 'rb') as f:
+        addr2formats = pickle.load(f)
+    with open('../pickles/addr2geo.pkl', 'rb') as f:
+        addr2geos = pickle.load(f)
+
     IL_list, anonym_addr_l = IL_calc(org_list,
                                      anonymized_list,
                                      anonymized_list,
-                                     attr_list)
+                                     attr_list,
+                                     addr2formats,
+                                     addr2geos)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
     print('IL: ', np.mean(IL_list))
 
-
     IL_list, anonym_addr_l = IL_calc(org_list,
                                      anonymized_list,
                                      watermarked_list,
-                                     attr_list)
+                                     attr_list,
+                                     addr2formats,
+                                     addr2geos)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
     print('IL: ', np.mean(IL_list))
