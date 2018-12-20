@@ -253,7 +253,7 @@ def insert_empty(dataset):
             dataset.insert(i, ['empty', i])
 
 
-def fix_addr(dataset, addr_first, addr_last):  
+def fix_addr(dataset, addr_first, addr_last):
     # dataset has been inserted 'empty'
     addr_l = list()
     for record in dataset:

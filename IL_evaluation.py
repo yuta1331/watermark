@@ -3,6 +3,7 @@
 
 import api
 from watermark import watermarker
+from watermark import detector
 import consts
 from evaluation.IL_calc import IL_calc
 
@@ -30,6 +31,8 @@ WATERMARK_GEN = False
 IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
+IL_RESULT_PICKLE = 'pickles/IL_results.pkl'
+
 if WATERMARK_GEN is True:
     water_bins_dict = dict()
     for water_len in WATER_LEN:
@@ -42,7 +45,6 @@ if WATERMARK_GEN is True:
 else:
     with open(WATERMARK_PICKLE, 'rb') as f:
         water_bins_dict = pickle.load(f)
-print(water_bins_dict[10])
 
 if IS_META_DICT_GENERATED is True:
     with open(META_DICT_PICKLE) as f:
@@ -59,7 +61,8 @@ datalist = deepcopy(ano_list)
 
 # sequential number の準備
 seq_index = csv_header.index('seq')
-ATTR_LIST.insert(seq_index, 'seq')
+if 'seq' not in ATTR_LIST:
+    ATTR_LIST.insert(seq_index, 'seq')
 
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
@@ -75,21 +78,41 @@ with open('pickles/addr2geo.pkl', 'rb') as f:
     addr2geos = pickle.load(f)
 
 ########### watermark ############
+IL_dict = dict()  # {water_len: [ILs]}
+
 for water_len in water_bins_dict.keys():
+    IL_dict[water_len] = list()
+
     for water_bin in water_bins_dict[water_len]:
         datalist = deepcopy(ano_list)
         meta_dict = watermarker(datalist, water_bin, MAX_BIN,
                                 meta_dict, ATTR_LIST, group_by, METHOD)
 
+        detected_bin = detector(ano_list, datalist, MAX_BIN, meta_dict,
+                                ATTR_LIST, group_by, water_len, METHOD)
+        if water_bin == detected_bin:
+            print('Success')
+        else:
+            print('Failure..')
+
         if IS_META_DICT_GENERATED is False:
             with open(META_DICT_PICKLE, 'wb') as f:
                 pickle.dump(meta_dict, f)
 
-        IL_list, anonym_addr_l = IL_calc(deepcopy(org_list),
-                                         deepcopy(ano_list),
-                                         deepcopy(datalist),
+        for record in datalist:
+            while len(record) > len(ATTR_LIST):
+                print(record)
+                record.pop()
+
+        tmp_ano_list = deepcopy(ano_list)
+        IL_list, anonym_addr_l = IL_calc(org_list,
+                                         tmp_ano_list,
+                                         datalist,
                                          ATTR_LIST,
                                          addr2formats,
                                          addr2geos)
 
-        print(np.mean(IL_list))
+        IL_dict[water_len].append(np.mean(IL_list))
+
+with open(IL_RESULT_PICKLE, 'wb') as f:
+    pickle.dump(IL_dict, f)
