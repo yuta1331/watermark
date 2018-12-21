@@ -57,7 +57,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
             group = group_list[group_i]  # 参照渡し
             i2b_dict = OrderedDict()
 
-            # print('######## group_i: ', group_i, '########')
+            print('######## group_i: ', group_i, '########')
 
             # append index and parent
             for index, record in enumerate(group):  # recordは参照渡し
@@ -101,11 +101,9 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             )
 
                         if len(water_bin) > 0:
-                            '''
                             print('######## i in group: ',
                                   record[-1],
                                   '########')
-                            '''
 
                             embed_num = min(embed_num, len(water_bin))
 
@@ -125,7 +123,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                                 )
                             # pickleのformatは'*'が1つ少ない
                             embedded_addr.append('*')
-                            print('\n')
+                            # print('\n')
 
                             # modifying
                             record[addr_first:addr_last+1] = embedded_addr
@@ -190,7 +188,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
 
         # 埋め込まれたグループのみ
         for group_i in meta_dict.keys():
-            print('######## group_i: ', group_i, ' ########')
+            print('######## dgroup_i: ', group_i, ' ########')
             org_g = org_group_l[group_i]
 
             # org_gとgroup_byの値が同じグループをmod_gから取り出す
@@ -246,7 +244,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                         )
 
                     candidate_mod_addr = mod_addrs_with_same_parent[0]
-                    # print('######## i in group: ', _i, ' ########')
+                    print('######## i in dgroup: ', _i, ' ########')
                     if candidate_mod_addr in candidate_addresses:
                         embed_num = meta_dict[group_i][_i]
                         extracted_chunk = candidate_addresses.\
@@ -260,7 +258,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                         print('embe: ', extracted_chunk)
                         print('prev: ', org_addr)
                         print('modi: ', mod_addrs_with_same_parent)
-                        print('\n')
+                        # print('\n')
                         extracted_bin += extracted_chunk
                         extract_num += meta_dict[group_i][_i]
                 else:
