@@ -16,10 +16,7 @@ from copy import deepcopy
 import unicodedata
 import numpy as np
 
-attr_list = consts.ATTR_LIST
-attr_list.append('seq')
 addr_attr = ['addr0', 'addr1', 'addr2', 'addr3', 'addr4']
-
 
 # categorical tree
 def loss(org_value, mod_value, attr, addr2formats, addr2geos):
@@ -326,6 +323,9 @@ def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos):
 
 
 if __name__ == '__main__':
+    attr_list = consts.ATTR_LIST
+    attr_list.append('seq')
+
     original_file = 'original_data.csv'
     anonymized_file = '../' + consts.ORIGIN_FILE
     watermarked_file = '../' + consts.MODIFIED_FILE

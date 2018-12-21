@@ -4,7 +4,6 @@
 import api
 from watermark import watermarker
 from watermark import detector
-import consts
 from evaluation.IL_calc import IL_calc
 
 import random
@@ -16,22 +15,23 @@ import numpy as np
 
 ########### config ############
 
-INFILE = consts.ORIGIN_FILE
-OUTFILE = consts.MODIFIED_FILE
+INFILE = 'csvs/anonymized_data.csv'
 WATERMARK_PICKLE = 'pickles/watermarks.pkl'
 META_DICT_PICKLE = 'pickles/meta_dicts.pkl'
-METHOD = consts.METHOD
-ATTR_LIST = consts.ATTR_LIST
-SENSITIVE = consts.SENSITIVE
-GROUP_BY_ATTR = consts.GROUP_BY_ATTR
-WATER_LEN = list(range(10, 100, 10))
+METHOD = 'geo'
+ATTR_LIST = ['sex', 'tel',
+             'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
+             'birth', 'time']
+SENSITIVE = 9
+GROUP_BY_ATTR = ['time', 'tel', 'sex']
+WATER_LEN = list(range(10, 1010, 10))
 MAX_BIN = 100
 
-WATERMARK_GEN = False
+WATERMARK_GEN = True
 IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
-IL_RESULT_PICKLE = 'pickles/IL_results.pkl'
+IL_RESULT_PICKLE = 'result/IL_results1000.pkl'
 
 if WATERMARK_GEN is True:
     water_bins_dict = dict()
@@ -84,7 +84,9 @@ for water_len in water_bins_dict.keys():
     IL_dict[water_len] = list()
 
     for water_bin in water_bins_dict[water_len]:
+        print('water_len:', water_len)
         datalist = deepcopy(ano_list)
+        meta_dict = None
         meta_dict = watermarker(datalist, water_bin, MAX_BIN,
                                 meta_dict, ATTR_LIST, group_by, METHOD)
 
