@@ -10,6 +10,7 @@ import random
 import pickle
 from copy import deepcopy
 import numpy as np
+from collections import OrderedDict
 
 
 
@@ -24,7 +25,7 @@ ATTR_LIST = ['sex', 'tel',
              'birth', 'time']
 SENSITIVE = 9
 GROUP_BY_ATTR = ['time', 'tel', 'sex']
-WATER_LEN = list(range(10, 1010, 10))
+WATER_LEN = list(range(10, 110, 10))
 MAX_BIN = 100
 
 WATERMARK_GEN = True
@@ -34,7 +35,7 @@ IS_META_DICT_GENERATED = False
 IL_RESULT_PICKLE = 'result/IL_results1000.pkl'
 
 if WATERMARK_GEN is True:
-    water_bins_dict = dict()
+    water_bins_dict = OrderedDict()
     for water_len in WATER_LEN:
         water_bins_dict[water_len] = list()
         for i in range(50):  # 試行回数
@@ -78,7 +79,17 @@ with open('pickles/addr2geo.pkl', 'rb') as f:
     addr2geos = pickle.load(f)
 
 ########### watermark ############
-IL_dict = dict()  # {water_len: [ILs]}
+IL_dict = OrderedDict()  # {water_len: [ILs]}
+
+tmp_ano_list = deepcopy(ano_list)
+IL_list, anonym_addr_l = IL_calc(org_list,
+                                 tmp_ano_list,
+                                 tmp_ano_list,
+                                 ATTR_LIST,
+                                 addr2formats,
+                                 addr2geos)
+IL = np.mean(IL_list)
+IL_dict[0] = [IL for i in range(50)]
 
 for water_len in water_bins_dict.keys():
     IL_dict[water_len] = list()
