@@ -119,7 +119,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
                             print('modi: ', embedded_addr)
                             # formatting
                             embedded_addr = copy.deepcopy(
-                                addr2formats[embedded_addr]
+                                local_addr2formats[embedded_addr]
                                 )
                             # pickleのformatは'*'が1つ少ない
                             embedded_addr.append('*')

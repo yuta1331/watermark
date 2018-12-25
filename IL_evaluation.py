@@ -5,6 +5,7 @@ import api
 from watermark import watermarker
 from watermark import detector
 from evaluation.IL_calc import IL_calc
+from subset.addr_operation import local_addr2formatsgeos as la2fg
 
 import random
 import pickle
@@ -25,10 +26,10 @@ ATTR_LIST = ['sex', 'tel',
              'birth', 'time']
 SENSITIVE = 9
 GROUP_BY_ATTR = ['time', 'tel', 'sex']
-WATER_LEN = list(range(10, 110, 10))
+WATER_LEN = list(range(10, 1010, 10))
 MAX_BIN = 100
 
-WATERMARK_GEN = True
+WATERMARK_GEN = False
 IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
@@ -78,6 +79,10 @@ with open('pickles/addr2format.pkl', 'rb') as f:
 with open('pickles/addr2geo.pkl', 'rb') as f:
     addr2geos = pickle.load(f)
 
+# localized dictionaries
+local_addr2formats, local_addr2geos =\
+    la2fg(ATTR_LIST, ano_list, addr2formats, addr2geos)
+
 ########### watermark ############
 IL_dict = OrderedDict()  # {water_len: [ILs]}
 
@@ -86,8 +91,8 @@ IL_list, anonym_addr_l = IL_calc(org_list,
                                  tmp_ano_list,
                                  tmp_ano_list,
                                  ATTR_LIST,
-                                 addr2formats,
-                                 addr2geos)
+                                 local_addr2formats,
+                                 local_addr2geos)
 IL = np.mean(IL_list)
 IL_dict[0] = [IL for i in range(50)]
 
@@ -108,9 +113,11 @@ for water_len in water_bins_dict.keys():
         else:
             print('Failure..')
 
+        '''
         if IS_META_DICT_GENERATED is False:
             with open(META_DICT_PICKLE, 'wb') as f:
                 pickle.dump(meta_dict, f)
+        '''
 
         for record in datalist:
             while len(record) > len(ATTR_LIST):
@@ -122,8 +129,8 @@ for water_len in water_bins_dict.keys():
                                          tmp_ano_list,
                                          datalist,
                                          ATTR_LIST,
-                                         addr2formats,
-                                         addr2geos)
+                                         local_addr2formats,
+                                         local_addr2geos)
 
         IL_dict[water_len].append(np.mean(IL_list))
 

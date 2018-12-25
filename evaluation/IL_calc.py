@@ -10,6 +10,7 @@ import api
 from subset.addr_operation import addr_range_catcher
 from subset.addr_operation import candidate_addr2geos
 from Anonymizer import anonymizer
+from subset.addr_operation import local_addr2formatsgeos as la2fg
 
 import pickle
 from copy import deepcopy
@@ -25,10 +26,20 @@ def loss(org_value, mod_value, attr, addr2formats, addr2geos):
     if attr == 'addr':
         cand_addr2geos = candidate_addr2geos(org_value, addr2formats,
                                              addr2geos, distance=True)
+        if cand_addr2geos == None:
+            print('Error: cand_addr2geos')
+            print(''.join(org_value).strip('*'))
+            print(''.join(mod_value).strip('*'))
         mod_addr = ''.join(mod_value).strip('*')
         d = cand_addr2geos[mod_addr]
         max_d = max(cand_addr2geos.values())
-        return d / max_d
+        if max_d >0:
+            return d / max_d
+        if d != 0:
+            print('d is not 0: d / max_d in loss()')
+            print('org_addr: ', org_value)
+            print('mod_addr: ', mod_value)
+        return d
 
 
 def left(digit, msg):
@@ -339,12 +350,16 @@ if __name__ == '__main__':
     with open('../pickles/addr2geo.pkl', 'rb') as f:
         addr2geos = pickle.load(f)
 
+    # localized dictionaries
+    local_addr2formats, local_addr2geos =\
+        la2fg(attr_list, anonymized_list, addr2formats, addr2geos)
+
     IL_list, anonym_addr_l = IL_calc(org_list,
                                      anonymized_list,
                                      anonymized_list,
                                      attr_list,
-                                     addr2formats,
-                                     addr2geos)
+                                     local_addr2formats,
+                                     local_addr2geos)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
     print('IL: ', np.mean(IL_list))
@@ -353,8 +368,8 @@ if __name__ == '__main__':
                                      anonymized_list,
                                      watermarked_list,
                                      attr_list,
-                                     addr2formats,
-                                     addr2geos)
+                                     local_addr2formats,
+                                     local_addr2geos)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
     print('IL: ', np.mean(IL_list))

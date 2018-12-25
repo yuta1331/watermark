@@ -170,6 +170,8 @@ def candidate_addr2geos(formatted_addr, addr2formats,
     cand_addr2geos = OrderedDict(sorted(cand_addr2geos.items(),
                                         key=lambda x: x[1]))
 
+    cand_addr2geos.move_to_end(addr, False)
+
     if distance is True:
         return cand_addr2geos
     else:
