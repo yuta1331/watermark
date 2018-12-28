@@ -53,11 +53,12 @@ if __name__ == '__main__':
     MAX_BIN = consts.MAX_BIN
 
     # test config
-    ATTACK_LIST = ['shuffle', 'add', 'del', 'collusion']
-    TRIAL_NUM = 10
-    MAX_ATTACK_RATE = 250  # permille
+    # ATTACK_LIST = ['shuffle', 'add', 'del', 'collusion']
+    ATTACK_LIST = ['add']
+    TRIAL_NUM = 50
+    MAX_ATTACK_RATE = 500  # permille
     STEP_ATTACK_RATE = 5  # permille
-    RESULT_PICKLE = 'result/attack_result.pkl'
+    RESULT_PICKLE = 'result/attack_result_add.pkl'
 
     # preparing data
     csv_header, orglist = api.parsed_list(ORIGINAL_FILE, header=True)
@@ -98,12 +99,16 @@ if __name__ == '__main__':
 
         elif attack == 'add':
             result_add_dict = OrderedDict()
+            total_len = OrderedDict()
             for attack_rate, attack_num in zip(attack_rate_list,
                                                attack_num_list):
                 result_add_list = list()
+                total_len[attack_rate] = list()
                 for i in range(TRIAL_NUM):
                     index_added, attacked_list =\
                             add_attack(modlist, attack_num)
+                    attacked_list = shuffle_attack(attacked_list)
+                    total_len[attack_rate].append(len(attacked_list))
                     detected_bin = detector(orglist, attacked_list,
                                             MAX_BIN, meta_dict,
                                             ATTR_LIST, group_by,
@@ -114,7 +119,6 @@ if __name__ == '__main__':
                                       / WATER_LEN)
                     result_add_list.append(bin_similarity)
                 result_add_dict[attack_rate] = result_add_list
-            api.csv_composer(csv_header, attacked_list, 'fuga.csv')
             result_dict[attack] = result_add_dict
 
         elif attack == 'del':
@@ -143,3 +147,5 @@ if __name__ == '__main__':
 
     with open(RESULT_PICKLE, 'wb') as f:
         pickle.dump(result_dict, f)
+    with open('check.pkl', 'wb') as f:
+        pickle.dump(total_len, f)
