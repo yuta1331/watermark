@@ -72,8 +72,11 @@ embed_sum = 0
 keys = list(meta_dict.keys())
 for i, meta in enumerate(meta_dict.values()):
     print('{:<3}'.format(keys[i]), meta)
-    for embed_num in meta.values():
-        embed_sum += embed_num
+    if consts.MODE == 'proposal':
+        for embed_num in meta.values():
+            embed_sum += embed_num
+    if consts.MODE == 'existing':
+        embed_sum += meta
 print(embed_sum)
 
 '''
