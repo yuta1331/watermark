@@ -16,10 +16,13 @@ http://nlftp.mlit.go.jp/cgi-bin/isj/dls/_choose_method.cgi
 次に、`geomaker.py`を実行する。<br>
 そうすると、`pickles/`に`addr2format.pkl`と`addr2geo.pkl`が作成される。
 
+### configuration
+watermarkingとdetectingの共通設定は`consts.py`にて。
+
 ### run watermarking
 `anonymized_data.csv`にwatermarkを入れて`watermarked_data.csv`を生成する。
 
-各設定はmain.pyのconfig欄で。
+watermarking固有の設定はmain.pyのconfig欄で。
 
 ```bash
 python main.py
@@ -33,3 +36,10 @@ python main.py
 ```bash
 python main_detect.py
 ```
+
+## Caution
+現在の実装はデータの各行末にシーケンシャルナンバーがないとちゃんと動作しない。
+属性名はseq。
+理由は評価のため。
+
+最終的には、seqがなくても動作できるようにする予定。
