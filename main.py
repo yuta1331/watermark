@@ -44,6 +44,10 @@ else:
 ########### initial ############
 csv_header, datalist = api.parsed_list(INFILE, True)
 
+# sequential number の準備
+seq_index = csv_header.index('seq')
+ATTR_LIST.insert(seq_index, 'seq')
+
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
@@ -68,8 +72,11 @@ embed_sum = 0
 keys = list(meta_dict.keys())
 for i, meta in enumerate(meta_dict.values()):
     print('{:<3}'.format(keys[i]), meta)
-    for embed_num in meta.values():
-        embed_sum += embed_num
+    if consts.MODE == 'proposal':
+        for embed_num in meta.values():
+            embed_sum += embed_num
+    if consts.MODE == 'existing':
+        embed_sum += meta
 print(embed_sum)
 
 '''

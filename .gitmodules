@@ -1,0 +1,3 @@
+[submodule "Anonymizer"]
+	path = Anonymizer
+	url = git@github.com:yuta1331/Anonymizer.git

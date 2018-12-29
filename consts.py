@@ -1,11 +1,15 @@
 #! usr/bin/env python
 # -*- coding: utf-8 -*-
 
-ORIGIN_FILE = 'csvs/anonymized_data.csv'
-MODIFIED_FILE = 'csvs/watermarked_data.csv'
+# comparison method
+# MODE = 'proposal'
+MODE = 'existing'
 
-WATERMARK_PICKLE = 'pickles/watermark.pkl'
-META_DICT_PICKLE = 'pickles/meta_dict.pkl'
+ORIGIN_FILE = 'csvs/anonymized_data.csv'
+MODIFIED_FILE = 'csvs/' + MODE + '_watermarked_data.csv'
+
+WATERMARK_PICKLE = 'pickles/' + MODE + '_watermark.pkl'
+META_DICT_PICKLE = 'pickles/' + MODE + '_meta_dict.pkl'
 
 # METHOD = 'embedding'
 METHOD = 'geo'
