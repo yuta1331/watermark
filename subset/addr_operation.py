@@ -6,6 +6,11 @@ import math
 import copy
 from collections import OrderedDict
 
+from . import embedding_operation
+import sys
+sys.path.append('../')
+import consts
+
 
 def joined_addr(first, last, record):
     addr = ''.join(record[first:last+1])
@@ -123,7 +128,7 @@ def geo_distance(geo1, geo2):
                      (geo1[1] - geo2[1]) ** 2)
 
 
-def candidate_addresses(formatted_addr, addr2formats, addr2geos):
+def candidate_addresses(formatted_addr, addr2formats):
     # 候補がなければNoneを返す
 
     if formatted_addr[1] == '*':
@@ -150,9 +155,7 @@ def candidate_addr2geos(formatted_addr, addr2formats,
                         addr2geos, distance=False):
     # 候補がなければNoneを返す
 
-    cand_addrs = candidate_addresses(formatted_addr,
-                                     addr2formats,
-                                     addr2geos)
+    cand_addrs = candidate_addresses(formatted_addr, addr2formats)
     if cand_addrs is None:
         return None
 
@@ -160,15 +163,28 @@ def candidate_addr2geos(formatted_addr, addr2formats,
         return None
 
     addr = ''.join(formatted_addr).strip('*')
-    geo = addr2geos[addr]
 
     cand_addr2geos = dict()
 
-    for cand_addr in cand_addrs:
-        cand_addr2geos[cand_addr] = geo_distance(geo, addr2geos[cand_addr])
+    if consts.IS_EMBEDDING:
+        model = embedding_operation.load_model(consts.MODEL)
+        addr_vec = model.get_word_vector(addr)
+
+        for cand_addr in cand_addrs:
+            cand_addr_vec = model.get_word_vector(cand_addr)
+            cand_addr2geos[cand_addr] = embedding_operation\
+                                        .cosine_similarity(addr_vec,
+                                                           cand_addr_vec)
+
+    else:
+        geo = addr2geos[addr]
+
+        for cand_addr in cand_addrs:
+            cand_addr2geos[cand_addr] = geo_distance(geo, addr2geos[cand_addr])
 
     cand_addr2geos = OrderedDict(sorted(cand_addr2geos.items(),
-                                        key=lambda x: x[1]))
+                                        key=lambda x: x[1],
+                                        reverse=consts.IS_EMBEDDING))
 
     cand_addr2geos.move_to_end(addr, False)
 
