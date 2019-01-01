@@ -31,9 +31,15 @@ def loss(org_value, mod_value, attr, addr2formats, addr2geos):
             print(''.join(org_value).strip('*'))
             print(''.join(mod_value).strip('*'))
         mod_addr = ''.join(mod_value).strip('*')
-        d = cand_addr2geos[mod_addr]
-        max_d = max(cand_addr2geos.values())
-        if max_d >0:
+        if consts.IS_EMBEDDING:
+            d = 1 - cand_addr2geos[mod_addr]
+            if d < 0:
+                d = 0
+            max_d = 1 - min(cand_addr2geos.values())
+        else:
+            d = cand_addr2geos[mod_addr]
+            max_d = max(cand_addr2geos.values())
+        if max_d > 0:
             return d / max_d
         if d != 0:
             print('d is not 0: d / max_d in loss()')

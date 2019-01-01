@@ -33,13 +33,14 @@ WATERMARK_GEN = False
 IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
-IL_RESULT_PICKLE = 'result/IL_results1000.pkl'
+TRIAL_NUM = 10
+IL_RESULT_PICKLE = 'result/IL_results_embedding_1000.pkl'
 
 if WATERMARK_GEN is True:
     water_bins_dict = OrderedDict()
     for water_len in WATER_LEN:
         water_bins_dict[water_len] = list()
-        for i in range(50):  # 試行回数
+        for i in range(TRIAL_NUM):  # 試行回数
             water_bins_dict[water_len].append(
                     ''.join([random.choice('01') for i in range(water_len)]))
     with open(WATERMARK_PICKLE, 'wb') as f:
@@ -94,7 +95,7 @@ IL_list, anonym_addr_l = IL_calc(org_list,
                                  local_addr2formats,
                                  local_addr2geos)
 IL = np.mean(IL_list)
-IL_dict[0] = [IL for i in range(50)]
+IL_dict[0] = [IL for i in range(TRIAL_NUM)]
 
 for water_len in water_bins_dict.keys():
     IL_dict[water_len] = list()
