@@ -46,7 +46,7 @@ def low_loss_watermark(water_bin, max_bin, embedded_location, datalist,
         group = group_list[group_i]  # 参照渡し
         i2b_dict = OrderedDict()
 
-        print('######## group_i: ', group_i, '########')
+        # print('######## group_i: ', group_i, '########')
 
         # append index and parent
         for index, record in enumerate(group):  # recordは参照渡し
@@ -90,9 +90,9 @@ def low_loss_watermark(water_bin, max_bin, embedded_location, datalist,
                         )
 
                     if len(water_bin) > 0:
-                        print('######## i in group: ',
-                              record[-1],
-                              '########')
+                        # print('######## i in group: ',
+                        #       record[-1],
+                        #       '########')
 
                         embed_num = min(embed_num, len(water_bin))
 
@@ -103,9 +103,9 @@ def low_loss_watermark(water_bin, max_bin, embedded_location, datalist,
                             int(embed_bin, 2)
                             ]
 
-                        print('embe: ', embed_bin)
-                        print('prev: ', addr)
-                        print('modi: ', embedded_addr)
+                        # print('embe: ', embed_bin)
+                        # print('prev: ', addr)
+                        # print('modi: ', embedded_addr)
                         # formatting
                         embedded_addr = copy.deepcopy(
                             local_addr2formats[embedded_addr]
@@ -151,7 +151,7 @@ def more_loss_watermarker(water_bin, embedded_location, datalist,
     for group_i in embedded_location:
         group = group_list[group_i]  # 参照渡し
 
-        print('######## group_i: ', group_i, '########')
+        # print('######## group_i: ', group_i, '########')
 
         if len(water_bin) > 0:
 
@@ -161,14 +161,14 @@ def more_loss_watermarker(water_bin, embedded_location, datalist,
             embed_bin = water_bin[:embed_num]
             water_bin = water_bin[embed_num:]
 
-            print('###### embe: ', embed_bin, ' ######')
+            # print('###### embe: ', embed_bin, ' ######')
 
             for i in range(int(embed_bin, 2)):
                 addr = group[i][addr_first:addr_last+1]
-                print('prev: ', addr)
+                # print('prev: ', addr)
                 mod_addr = address_masking(attr_list[addr_first:addr_last+1],
                                            addr)
-                print('modi: ', mod_addr)
+                # print('modi: ', mod_addr)
                 for mod_i, addr_i in enumerate(range(addr_first, addr_last+1)):
                     group[i][addr_i] = mod_addr[mod_i]
 
@@ -229,9 +229,9 @@ def low_loss_detector(group_i, org_g, mod_g, extract_num,
                       extracted_bin, meta_dict, addr_first, addr_last,
                       local_addr2formats, local_addr2geos):
     if mod_g is None:
-        print('Error: the same group is not found')
-        print('       group_i: ', group_i)
-        print('       group  : ', org_g)
+        # print('Error: the same group is not found')
+        # print('       group_i: ', group_i)
+        # print('       group  : ', org_g)
         for embed_num in meta_dict[group_i].values():
             extracted_bin += format(
                     0,
@@ -279,7 +279,7 @@ def low_loss_detector(group_i, org_g, mod_g, extract_num,
                 )
 
             candidate_mod_addr = mod_addrs_with_same_parent[0]
-            print('######## i in dgroup: ', _i, ' ########')
+            # print('######## i in dgroup: ', _i, ' ########')
             if candidate_mod_addr in candidate_addresses:
                 embed_num = meta_dict[group_i][_i]
                 extracted_chunk = candidate_addresses.\
@@ -290,9 +290,9 @@ def low_loss_detector(group_i, org_g, mod_g, extract_num,
                     )
                 if embed_num < len(extracted_chunk):
                     extracted_chunk = extracted_chunk[:embed_num]
-                print('embe: ', extracted_chunk)
-                print('prev: ', org_addr)
-                print('modi: ', mod_addrs_with_same_parent)
+                # print('embe: ', extracted_chunk)
+                # print('prev: ', org_addr)
+                # print('modi: ', mod_addrs_with_same_parent)
                 # print('\n')
                 extracted_bin += extracted_chunk
                 extract_num += meta_dict[group_i][_i]
@@ -310,11 +310,11 @@ def more_loss_detector(group_i, org_g, mod_g, extract_num, water_len,
                        extracted_bin, addr_first, addr_last):
     embed_num = min(int(math.log2(len(org_g)+1)),
                     water_len - len(extracted_bin))
-    print('{:3}'.format(group_i), embed_num)
+    # print('{:3}'.format(group_i), embed_num)
     if mod_g is None:
-        print('Error: the same group is not found')
-        print('       group_i: ', group_i)
-        print('       group  : ', org_g)
+        # print('Error: the same group is not found')
+        # print('       group_i: ', group_i)
+        # print('       group  : ', org_g)
         extracted_bin += format(
                 0,
                 '0>' + str(embed_num) + 'b'
@@ -378,5 +378,5 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                         extracted_bin, addr_first, addr_last
                         )
 
-    print('extract num: ', extract_num)
+    # print('extract num: ', extract_num)
     return extracted_bin

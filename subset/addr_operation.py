@@ -61,7 +61,7 @@ def formatted_addr_from_addr(addr, addr2formats):
 
     # KeyErrorの場合は知っているもの+知らないものにして返す
     except KeyError:
-        print('KeyError: ', addr)
+        # print('KeyError: ', addr)
 
         extra = ''
         while True:
@@ -82,7 +82,7 @@ def geo_from_addr(addr, addr2geos):
 
     # KeyErrorの場合は知っているものになるまで尻から削っていく
     except KeyError:
-        print('KeyError: ', addr)
+        # print('KeyError: ', addr)
 
         while True:
             addr = addr[:-1]
@@ -221,21 +221,23 @@ if __name__ == '__main__':
 
     # candidate: nearest addrs and their distances
     addr_first, addr_last = addr_range_catcher(ATTR_LIST)
+    '''
     for record in datalist:
         print(
             candidate_addr2geos(record[addr_first:addr_last+1],
                                 local_addr2formats,
                                 local_addr2geos, True)
         )
+    '''
 
     '''
     # local_addr2geos
     for i in local_addr2geos:
         print(i, local_addr2formats[i])
     '''
-    print('######## parent ########')
+    # print('######## parent ########')
     for record in datalist:
         addr = record[addr_first:addr_last+1]
         parent = parent_addr(addr)
-        print('origin: ', addr)
-        print('parent: ', parent)
+        # print('origin: ', addr)
+        # print('parent: ', parent)

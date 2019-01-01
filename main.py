@@ -71,13 +71,13 @@ if IS_META_DICT_GENERATED is False:
 embed_sum = 0
 keys = list(meta_dict.keys())
 for i, meta in enumerate(meta_dict.values()):
-    print('{:<3}'.format(keys[i]), meta)
+    # print('{:<3}'.format(keys[i]), meta)
     if consts.MODE == 'proposal':
         for embed_num in meta.values():
             embed_sum += embed_num
     if consts.MODE == 'existing':
         embed_sum += meta
-print(embed_sum)
+# print(embed_sum)
 
 '''
 # 最後尾の要素がグループ内の要素数

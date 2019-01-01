@@ -26,10 +26,10 @@ ATTR_LIST = ['sex', 'tel',
              'birth', 'time']
 SENSITIVE = 9
 GROUP_BY_ATTR = ['time', 'tel', 'sex']
-WATER_LEN = list(range(10, 1010, 10))
+WATER_LEN = list(range(50, 1050, 50))
 MAX_BIN = 100
 
-WATERMARK_GEN = False
+WATERMARK_GEN = True
 IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
@@ -101,7 +101,7 @@ for water_len in water_bins_dict.keys():
     IL_dict[water_len] = list()
 
     for water_bin in water_bins_dict[water_len]:
-        print('water_len:', water_len)
+        # print('water_len:', water_len)
         datalist = deepcopy(ano_list)
         meta_dict = None
         meta_dict = watermarker(datalist, water_bin, MAX_BIN,
@@ -120,10 +120,12 @@ for water_len in water_bins_dict.keys():
                 pickle.dump(meta_dict, f)
         '''
 
+        '''
         for record in datalist:
             while len(record) > len(ATTR_LIST):
                 print(record)
                 record.pop()
+        '''
 
         tmp_ano_list = deepcopy(ano_list)
         IL_list, anonym_addr_l = IL_calc(org_list,
