@@ -92,8 +92,7 @@ if __name__ == '__main__':
     print('TRIAL_NUM: ' , TRIAL_NUM)
     for attack in ATTACK_LIST:
         sys.stdout.write('\n')
-        sys.stdout.write(attack)
-        sys.stdout.write('\n')
+        print(attack)
 
         if attack == 'shuffle':
             result_shuffle = list()
@@ -110,6 +109,7 @@ if __name__ == '__main__':
                 result_shuffle.append(bin_similarity)
 
                 sys.stdout.write('#')
+                sys.stdout.flush()
 
             result_dict[attack] = result_shuffle
 
@@ -119,10 +119,8 @@ if __name__ == '__main__':
             for attack_rate, attack_num in zip(attack_rate_list,
                                                attack_num_list):
                 sys.stdout.write('\n')
-                sys.stdout.write(attack)
-                sys.stdout.write(' attack_rate: ')
-                sys.stdout.write(str(attack_rate))
-                sys.stdout.write('\n')
+                print(attack)
+                print(' attack_rate: ', str(attack_rate))
 
                 result_add_list = list()
                 total_len[attack_rate] = list()
@@ -142,6 +140,7 @@ if __name__ == '__main__':
                     result_add_list.append(bin_similarity)
 
                     sys.stdout.write('#')
+                    sys.stdout.flush()
 
                 result_add_dict[attack_rate] = result_add_list
             result_dict[attack] = result_add_dict
@@ -151,10 +150,8 @@ if __name__ == '__main__':
             for attack_rate, attack_num in zip(attack_rate_list,
                                                attack_num_list):
                 sys.stdout.write('\n')
-                sys.stdout.write(attack)
-                sys.stdout.write(' attack_rate: ')
-                sys.stdout.write(str(attack_rate))
-                sys.stdout.write('\n')
+                print(attack)
+                print(' attack_rate: ', str(attack_rate))
 
                 result_del_list = list()
                 for i in range(TRIAL_NUM):
@@ -171,6 +168,7 @@ if __name__ == '__main__':
                     result_del_list.append(bin_similarity)
 
                     sys.stdout.write('#')
+                    sys.stdout.flush()
 
                 result_del_dict[attack_rate] = result_del_list
             result_dict[attack] = result_del_dict
