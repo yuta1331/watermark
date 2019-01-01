@@ -3,6 +3,7 @@
 
 import api
 from watermark import detector
+from subset import embedding_operation
 import consts
 
 import pickle
@@ -29,9 +30,15 @@ with open(META_DICT_PICKLE, 'rb') as f:
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
 
+# embedding mode
+if consts.IS_EMBEDDING:
+    model = embedding_operation.load_model(consts.MODEL)
+else:
+    model = None
+
 ########### detection ############
 detected_bin = detector(origin_l, modified_l, MAX_BIN, meta_dict,
-                        ATTR_LIST, group_by, WATER_LEN, METHOD)
+                        ATTR_LIST, group_by, WATER_LEN, METHOD, model)
 
 # print('###### detected_bin ######')
 # print(detected_bin)

@@ -152,7 +152,7 @@ def candidate_addresses(formatted_addr, addr2formats):
 
 
 def candidate_addr2geos(formatted_addr, addr2formats,
-                        addr2geos, distance=False):
+                        addr2geos, model=None, distance=False):
     # 候補がなければNoneを返す
 
     cand_addrs = candidate_addresses(formatted_addr, addr2formats)
@@ -167,7 +167,6 @@ def candidate_addr2geos(formatted_addr, addr2formats,
     cand_addr2geos = dict()
 
     if consts.IS_EMBEDDING:
-        model = embedding_operation.load_model(consts.MODEL)
         addr_vec = model.get_word_vector(addr)
 
         for cand_addr in cand_addrs:

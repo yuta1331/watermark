@@ -3,6 +3,7 @@
 
 import api
 from watermark import watermarker
+from subset import embedding_operation
 import consts
 
 import random
@@ -56,9 +57,15 @@ if IS_ORIGIN_FILE_SORTED is False:
     datalist = api.sorted_list(datalist, group_by)
     api.csv_composer(csv_header, datalist, INFILE)
 
+# embedding mode
+if consts.IS_EMBEDDING:
+    model = embedding_operation.load_model(consts.MODEL)
+else:
+    model = None
+
 ########### watermark ############
-meta_dict = watermarker(datalist, water_bin, MAX_BIN,
-                        meta_dict, ATTR_LIST, group_by, METHOD)
+meta_dict = watermarker(datalist, water_bin, MAX_BIN, meta_dict,
+                        ATTR_LIST, group_by, METHOD, model)
 
 if IS_META_DICT_GENERATED is False:
     with open(META_DICT_PICKLE, 'wb') as f:

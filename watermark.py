@@ -32,7 +32,7 @@ MODE = consts.MODE
 ########## method ###########
 def low_loss_watermark(water_bin, max_bin, embedded_location, datalist,
                        attr_list, group_by, addr_first, addr_last,
-                       local_addr2formats, local_addr2geos):
+                       model, local_addr2formats, local_addr2geos):
 
     meta_dict = OrderedDict()
 
@@ -80,7 +80,8 @@ def low_loss_watermark(water_bin, max_bin, embedded_location, datalist,
                 candidate_addresses = ca2g(
                     formatted_addr,
                     local_addr2formats,
-                    local_addr2geos
+                    local_addr2geos,
+                    model
                     )
 
                 if candidate_addresses is not None:
@@ -179,7 +180,7 @@ def more_loss_watermarker(water_bin, embedded_location, datalist,
 
 
 def watermarker(datalist, water_bin, max_bin, embedded_location,
-                attr_list, group_by, method):
+                attr_list, group_by, method, model):
 
     if method == 'geo':
         # print('Watermarking with GeoLocation')
@@ -200,7 +201,7 @@ def watermarker(datalist, water_bin, max_bin, embedded_location,
             meta_dict = low_loss_watermark(
                     water_bin, max_bin, embedded_location, datalist,
                     attr_list, group_by, addr_first, addr_last,
-                    local_addr2formats, local_addr2geos
+                    model, local_addr2formats, local_addr2geos
                     )
         elif MODE == 'existing':
             # meta_dict = [group_i]
@@ -227,7 +228,7 @@ def same_group_as_org_g(org_g, mod_group_l, group_by):
 
 def low_loss_detector(group_i, org_g, mod_g, extract_num,
                       extracted_bin, meta_dict, addr_first, addr_last,
-                      local_addr2formats, local_addr2geos):
+                      model, local_addr2formats, local_addr2geos):
     if mod_g is None:
         # print('Error: the same group is not found')
         # print('       group_i: ', group_i)
@@ -275,7 +276,8 @@ def low_loss_detector(group_i, org_g, mod_g, extract_num,
             candidate_addresses = ca2g(
                 formatted_org_addr,
                 local_addr2formats,
-                local_addr2geos
+                local_addr2geos,
+                model
                 )
 
             candidate_mod_addr = mod_addrs_with_same_parent[0]
@@ -336,8 +338,8 @@ def more_loss_detector(group_i, org_g, mod_g, extract_num, water_len,
     return extract_num, extracted_bin
 
 
-def detector(org_l, mod_l, max_bin, meta_dict,
-             attr_list, group_by, water_len, method):
+def detector(org_l, mod_l, max_bin, meta_dict, attr_list,
+             group_by, water_len, method, model):
 
     extracted_bin = ''
     extract_num = 0
@@ -370,7 +372,7 @@ def detector(org_l, mod_l, max_bin, meta_dict,
                 extract_num, extracted_bin = low_loss_detector(
                         group_i, org_g, mod_g, extract_num, extracted_bin,
                         meta_dict, addr_first, addr_last,
-                        local_addr2formats, local_addr2geos
+                        model, local_addr2formats, local_addr2geos
                         )
             elif MODE == 'existing':
                 extract_num, extracted_bin = more_loss_detector(
