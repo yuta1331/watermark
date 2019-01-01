@@ -58,7 +58,7 @@ if __name__ == '__main__':
     TRIAL_NUM = 50
     MAX_ATTACK_RATE = 500  # permille
     STEP_ATTACK_RATE = 5  # permille
-    RESULT_PICKLE = 'result/attack_result_add.pkl'
+    RESULT_PICKLE = 'result/attack_result_add_embedding.pkl'
 
     # preparing data
     csv_header, orglist = api.parsed_list(ORIGINAL_FILE, header=True)
