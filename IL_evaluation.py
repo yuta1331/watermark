@@ -6,6 +6,7 @@ from watermark import watermarker
 from watermark import detector
 from evaluation.IL_calc import IL_calc
 from subset.addr_operation import local_addr2formatsgeos as la2fg
+from subset import embedding_operation
 
 import random
 import pickle
@@ -13,6 +14,7 @@ from copy import deepcopy
 import numpy as np
 from collections import OrderedDict
 
+import sys
 
 
 ########### config ############
@@ -26,15 +28,19 @@ ATTR_LIST = ['sex', 'tel',
              'birth', 'time']
 SENSITIVE = 9
 GROUP_BY_ATTR = ['time', 'tel', 'sex']
-WATER_LEN = list(range(50, 1050, 50))
+WATER_LEN = list(range(10, 1010, 10))
 MAX_BIN = 100
 
-WATERMARK_GEN = True
+WATERMARK_GEN = False
 IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
-TRIAL_NUM = 10
+TRIAL_NUM = 20
 IL_RESULT_PICKLE = 'result/IL_results_embedding_1000.pkl'
+
+# for embedding
+IS_EMBEDDING = True
+MODEL = '../models/model1/model_50.bin'
 
 if WATERMARK_GEN is True:
     water_bins_dict = OrderedDict()
@@ -84,6 +90,12 @@ with open('pickles/addr2geo.pkl', 'rb') as f:
 local_addr2formats, local_addr2geos =\
     la2fg(ATTR_LIST, ano_list, addr2formats, addr2geos)
 
+# embedding mode
+if IS_EMBEDDING:
+    model = embedding_operation.load_model(MODEL)
+else:
+    model = None
+
 ########### watermark ############
 IL_dict = OrderedDict()  # {water_len: [ILs]}
 
@@ -93,26 +105,30 @@ IL_list, anonym_addr_l = IL_calc(org_list,
                                  tmp_ano_list,
                                  ATTR_LIST,
                                  local_addr2formats,
-                                 local_addr2geos)
+                                 local_addr2geos,
+                                 model)
 IL = np.mean(IL_list)
 IL_dict[0] = [IL for i in range(TRIAL_NUM)]
 
 for water_len in water_bins_dict.keys():
     IL_dict[water_len] = list()
+    print('\nwater_len:', water_len)
 
     for water_bin in water_bins_dict[water_len]:
-        # print('water_len:', water_len)
         datalist = deepcopy(ano_list)
         meta_dict = None
         meta_dict = watermarker(datalist, water_bin, MAX_BIN,
-                                meta_dict, ATTR_LIST, group_by, METHOD)
+                                meta_dict, ATTR_LIST, group_by,
+                                METHOD, model)
 
         detected_bin = detector(ano_list, datalist, MAX_BIN, meta_dict,
-                                ATTR_LIST, group_by, water_len, METHOD)
+                                ATTR_LIST, group_by, water_len, METHOD, model)
         if water_bin == detected_bin:
-            print('Success')
+            sys.stdout.write('#')
+            sys.stdout.flush()
         else:
-            print('Failure..')
+            sys.stdout.write('*')
+            sys.stdout.flush()
 
         '''
         if IS_META_DICT_GENERATED is False:
@@ -133,7 +149,8 @@ for water_len in water_bins_dict.keys():
                                          datalist,
                                          ATTR_LIST,
                                          local_addr2formats,
-                                         local_addr2geos)
+                                         local_addr2geos,
+                                         model)
 
         IL_dict[water_len].append(np.mean(IL_list))
 

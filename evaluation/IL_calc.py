@@ -20,12 +20,12 @@ import numpy as np
 addr_attr = ['addr0', 'addr1', 'addr2', 'addr3', 'addr4']
 
 # categorical tree
-def loss(org_value, mod_value, attr, addr2formats, addr2geos):
+def loss(org_value, mod_value, attr, addr2formats, addr2geos, model):
     if org_value == mod_value:
         return 0
     if attr == 'addr':
         cand_addr2geos = candidate_addr2geos(org_value, addr2formats,
-                                             addr2geos, distance=True)
+                                             addr2geos, model, distance=True)
         if cand_addr2geos == None:
             print('Error: cand_addr2geos')
             print(''.join(org_value).strip('*'))
@@ -231,12 +231,13 @@ def general_addrs(addr_attr, addr_l):
 
 
 class AddrTree(GeneralTree):
-    def extended_IL_inverse(self, 
+    def extended_IL_inverse(self,
                             org_addr,
                             ano_addr,
                             wat_addr,
                             addr2formats,
-                            addr2geos):
+                            addr2geos,
+                            model):
         general_org_addr = general_addr(addr_attr, org_addr)
         general_ano_addr = general_addr(addr_attr, ano_addr)
         general_wat_addr = general_addr(addr_attr, wat_addr)
@@ -249,8 +250,8 @@ class AddrTree(GeneralTree):
         numerator = denominator - self.ratio_inverse(general_ano_addr)
         parent_IL = self.search(general_ano_addr[:-1])\
                         .ratio_inverse(general_ano_addr[-1])
-        parent_loss = loss(ano_addr, wat_addr, 'addr', 
-                           addr2formats, addr2geos)
+        parent_loss = loss(ano_addr, wat_addr, 'addr',
+                           addr2formats, addr2geos, model)
         numerator += parent_IL * parent_loss
 
         return numerator / denominator
@@ -278,7 +279,7 @@ def fix_addr(dataset, addr_first, addr_last):
     return addr_l
 
 
-def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos):
+def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos, model):
     # sequential numberをintに
     cast_sequential_num2int(org_l)
     cast_sequential_num2int(mod_l)
@@ -334,7 +335,8 @@ def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos):
                                                 mod_addr,
                                                 wat_addr,
                                                 addr2formats,
-                                                addr2geos))
+                                                addr2geos,
+                                                model))
 
     return IL_list, mod_addr_l
 
@@ -365,7 +367,8 @@ if __name__ == '__main__':
                                      anonymized_list,
                                      attr_list,
                                      local_addr2formats,
-                                     local_addr2geos)
+                                     local_addr2geos,
+                                     model)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
     print('IL: ', np.mean(IL_list))
@@ -375,7 +378,8 @@ if __name__ == '__main__':
                                      watermarked_list,
                                      attr_list,
                                      local_addr2formats,
-                                     local_addr2geos)
+                                     local_addr2geos,
+                                     model)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
     print('IL: ', np.mean(IL_list))
