@@ -57,11 +57,10 @@ if __name__ == '__main__':
 
     # test config
     ATTACK_LIST = ['shuffle', 'add', 'del', 'collusion']
-    # ATTACK_LIST = ['add']
     TRIAL_NUM = 20
     MAX_ATTACK_RATE = 500  # permille
     STEP_ATTACK_RATE = 5  # permille
-    RESULT_PICKLE = 'result/attack_result_add_embedding.pkl'
+    RESULT_PICKLE = 'result/attack_result.pkl'
 
     # preparing data
     csv_header, orglist = api.parsed_list(ORIGINAL_FILE, header=True)

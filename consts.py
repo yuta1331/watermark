@@ -12,7 +12,7 @@ WATERMARK_PICKLE = 'pickles/' + MODE + '_watermark.pkl'
 META_DICT_PICKLE = 'pickles/' + MODE + '_meta_dict.pkl'
 
 METHOD = 'geo'
-IS_EMBEDDING = True
+IS_EMBEDDING = False
 
 ATTR_LIST = ['sex', 'tel',
              'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
