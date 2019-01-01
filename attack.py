@@ -4,11 +4,14 @@
 import api
 import consts
 from watermark import detector
+from subset import embedding_operation
 
 import pickle
 import random
 from copy import deepcopy
 from collections import OrderedDict
+
+import sys
 
 
 def shuffle_attack(datalist):
@@ -53,9 +56,9 @@ if __name__ == '__main__':
     MAX_BIN = consts.MAX_BIN
 
     # test config
-    # ATTACK_LIST = ['shuffle', 'add', 'del', 'collusion']
-    ATTACK_LIST = ['add']
-    TRIAL_NUM = 50
+    ATTACK_LIST = ['shuffle', 'add', 'del', 'collusion']
+    # ATTACK_LIST = ['add']
+    TRIAL_NUM = 20
     MAX_ATTACK_RATE = 500  # permille
     STEP_ATTACK_RATE = 5  # permille
     RESULT_PICKLE = 'result/attack_result_add_embedding.pkl'
@@ -80,8 +83,19 @@ if __name__ == '__main__':
     attack_rate_list = list(
             range(0, MAX_ATTACK_RATE + STEP_ATTACK_RATE, STEP_ATTACK_RATE))
 
+    # embedding mode
+    if consts.IS_EMBEDDING:
+        model = embedding_operation.load_model(consts.MODEL)
+    else:
+        model = None
+
     # attack and try to detect
+    print('TRIAL_NUM: ' , TRIAL_NUM)
     for attack in ATTACK_LIST:
+        sys.stdout.write('\n')
+        sys.stdout.write(attack)
+        sys.stdout.write('\n')
+
         if attack == 'shuffle':
             result_shuffle = list()
             for i in range(TRIAL_NUM):
@@ -89,12 +103,15 @@ if __name__ == '__main__':
                 detected_bin = detector(orglist, attacked_list,
                                         MAX_BIN, meta_dict,
                                         ATTR_LIST, group_by,
-                                        WATER_LEN, METHOD)
+                                        WATER_LEN, METHOD, model)
                 bin_similarity = (sum([w == d for w, d
                                       in zip(watermarked_bin,
                                              detected_bin)])
                                   / WATER_LEN)
                 result_shuffle.append(bin_similarity)
+
+                sys.stdout.write('#')
+
             result_dict[attack] = result_shuffle
 
         elif attack == 'add':
@@ -102,6 +119,12 @@ if __name__ == '__main__':
             total_len = OrderedDict()
             for attack_rate, attack_num in zip(attack_rate_list,
                                                attack_num_list):
+                sys.stdout.write('\n')
+                sys.stdout.write(attack)
+                sys.stdout.write(' attack_rate: ')
+                sys.stdout.write(str(attack_rate))
+                sys.stdout.write('\n')
+
                 result_add_list = list()
                 total_len[attack_rate] = list()
                 for i in range(TRIAL_NUM):
@@ -112,12 +135,15 @@ if __name__ == '__main__':
                     detected_bin = detector(orglist, attacked_list,
                                             MAX_BIN, meta_dict,
                                             ATTR_LIST, group_by,
-                                            WATER_LEN, METHOD)
+                                            WATER_LEN, METHOD, model)
                     bin_similarity = (sum([w == d for w, d
                                           in zip(watermarked_bin,
                                                  detected_bin)])
                                       / WATER_LEN)
                     result_add_list.append(bin_similarity)
+
+                    sys.stdout.write('#')
+
                 result_add_dict[attack_rate] = result_add_list
             result_dict[attack] = result_add_dict
 
@@ -125,6 +151,12 @@ if __name__ == '__main__':
             result_del_dict = OrderedDict()
             for attack_rate, attack_num in zip(attack_rate_list,
                                                attack_num_list):
+                sys.stdout.write('\n')
+                sys.stdout.write(attack)
+                sys.stdout.write(' attack_rate: ')
+                sys.stdout.write(str(attack_rate))
+                sys.stdout.write('\n')
+
                 result_del_list = list()
                 for i in range(TRIAL_NUM):
                     index_deleted, attacked_list =\
@@ -132,12 +164,15 @@ if __name__ == '__main__':
                     detected_bin = detector(orglist, attacked_list,
                                             MAX_BIN, meta_dict,
                                             ATTR_LIST, group_by,
-                                            WATER_LEN, METHOD)
+                                            WATER_LEN, METHOD, model)
                     bin_similarity = (sum([w == d for w, d
                                           in zip(watermarked_bin,
                                                  detected_bin)])
                                       / WATER_LEN)
                     result_del_list.append(bin_similarity)
+
+                    sys.stdout.write('#')
+
                 result_del_dict[attack_rate] = result_del_list
             result_dict[attack] = result_del_dict
 
