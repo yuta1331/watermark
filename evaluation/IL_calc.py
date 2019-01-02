@@ -327,16 +327,25 @@ def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos, model):
             IL_list.append(addr_tree.ncp(mod_addr))
     elif IL_method == 'inverse':
         # IL_inverse: extended
-        for org_addr, mod_addr, wat_addr in zip(org_addr_l,
-                                                mod_addr_l,
-                                                wat_addr_l):
-            IL_list.append(addr_tree\
-                           .extended_IL_inverse(org_addr,
-                                                mod_addr,
-                                                wat_addr,
-                                                addr2formats,
-                                                addr2geos,
-                                                model))
+        if consts.MODE == 'proposal':
+            for org_addr, mod_addr, wat_addr in zip(org_addr_l,
+                                                    mod_addr_l,
+                                                    wat_addr_l):
+                IL_list.append(addr_tree\
+                               .extended_IL_inverse(org_addr,
+                                                    mod_addr,
+                                                    wat_addr,
+                                                    addr2formats,
+                                                    addr2geos,
+                                                    model))
+
+        # IL_inverse: not extended for existing method
+        elif consts.MODE == 'existing':
+            for org_addr, wat_addr in zip(org_addr_l, wat_addr_l):
+                general_org_addr = general_addr(addr_attr, org_addr)
+                general_wat_addr = general_addr(addr_attr, wat_addr)
+                IL_list.append(addr_tree.IL_inverse(general_org_addr,
+                                                    general_wat_addr))
 
     return IL_list, mod_addr_l
 
@@ -368,7 +377,7 @@ if __name__ == '__main__':
                                      attr_list,
                                      local_addr2formats,
                                      local_addr2geos,
-                                     model)
+                                     model=None)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
     print('IL: ', np.mean(IL_list))
@@ -379,7 +388,7 @@ if __name__ == '__main__':
                                      attr_list,
                                      local_addr2formats,
                                      local_addr2geos,
-                                     model)
+                                     model=None)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
     print('IL: ', np.mean(IL_list))

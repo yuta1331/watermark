@@ -23,6 +23,7 @@ INFILE = 'csvs/anonymized_data.csv'
 WATERMARK_PICKLE = 'pickles/watermarks.pkl'
 META_DICT_PICKLE = 'pickles/meta_dicts.pkl'
 METHOD = 'geo'
+MODE = 'existing'
 ATTR_LIST = ['sex', 'tel',
              'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
              'birth', 'time']
@@ -36,10 +37,10 @@ IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
 TRIAL_NUM = 20
-IL_RESULT_PICKLE = 'result/IL_results_embedding_1000.pkl'
+IL_RESULT_PICKLE = 'result/IL_results_existing_500.pkl'
 
 # for embedding
-IS_EMBEDDING = True
+IS_EMBEDDING = False
 MODEL = '../models/model1/model_50.bin'
 
 if WATERMARK_GEN is True:
@@ -111,6 +112,10 @@ IL = np.mean(IL_list)
 IL_dict[0] = [IL for i in range(TRIAL_NUM)]
 
 for water_len in water_bins_dict.keys():
+    # existing method has no capacity for more than 500 watermarks
+    if water_len > 500:
+        break
+
     IL_dict[water_len] = list()
     print('\nwater_len:', water_len)
 

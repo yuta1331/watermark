@@ -309,7 +309,7 @@ def low_loss_detector(group_i, org_g, mod_g, extract_num,
 
 
 def more_loss_detector(group_i, org_g, mod_g, extract_num, water_len,
-                       extracted_bin, addr_first, addr_last):
+                       attr_list, extracted_bin, addr_first, addr_last):
     embed_num = min(int(math.log2(len(org_g)+1)),
                     water_len - len(extracted_bin))
     # print('{:3}'.format(group_i), embed_num)
@@ -324,15 +324,25 @@ def more_loss_detector(group_i, org_g, mod_g, extract_num, water_len,
         extract_num += embed_num
         return extract_num, extracted_bin
 
-    org_addrs = list()
-    for org_l in org_g:
-        org_addrs.append(''.join(org_l[addr_first:addr_last+1]).strip('*'))
-    for mod_l in mod_g:
-        _mod_addr = ''.join(mod_l[addr_first:addr_last+1]).strip('*')
-        if _mod_addr in org_addrs:
-            org_addrs.remove(_mod_addr)
+    # clipping addrs
+    org_addr_g = [x[addr_first:addr_last+1] for x in org_g]
+    mod_addr_g = [x[addr_first:addr_last+1] for x in mod_g]
 
-    extracted_chunk = ('{:0='+str(embed_num)+'b}').format(len(org_addrs))
+    # sorting org_addr_g
+    sortKey = lambda x: x.index('*')
+    org_addr_g.sort(key=sortKey)
+
+    for i, org_addr in reversed(list(enumerate(org_addr_g))):
+        if org_addr in mod_addr_g:
+            del org_addr_g[i]
+            mod_addr_g.remove(org_addr)
+        else:
+            masked_addr = address_masking(attr_list[addr_first:addr_last+1],
+                                          org_addr)
+            if masked_addr in mod_addr_g:
+                mod_addr_g.remove(masked_addr)
+
+    extracted_chunk = ('{:0='+str(embed_num)+'b}').format(len(org_addr_g))
     extracted_bin += extracted_chunk
     extract_num += len(extracted_chunk)
     return extract_num, extracted_bin
@@ -377,7 +387,7 @@ def detector(org_l, mod_l, max_bin, meta_dict, attr_list,
             elif MODE == 'existing':
                 extract_num, extracted_bin = more_loss_detector(
                         group_i, org_g, mod_g, extract_num, water_len,
-                        extracted_bin, addr_first, addr_last
+                        attr_list, extracted_bin, addr_first, addr_last
                         )
 
     # print('extract num: ', extract_num)
