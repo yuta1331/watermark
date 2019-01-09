@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # comparison method
-# MODE = 'proposal'
-MODE = 'existing'
+MODE = 'proposal'
+# MODE = 'existing'
 
 ORIGIN_FILE = 'csvs/anonymized_data.csv'
 MODIFIED_FILE = 'csvs/' + MODE + '_watermarked_data.csv'

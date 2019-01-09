@@ -58,9 +58,13 @@ if __name__ == '__main__':
     # test config
     ATTACK_LIST = ['shuffle', 'add', 'del', 'collusion']
     TRIAL_NUM = 20
-    MAX_ATTACK_RATE = 500  # permille
-    STEP_ATTACK_RATE = 5  # permille
-    RESULT_PICKLE = 'result/attack_result_existin.pkl'
+
+    PERCENT = 100
+    PERMILLE = 1000
+    MAX_ATTACK_RATE = PERCENT
+    STEP_ATTACK_RATE = 1
+
+    RESULT_PICKLE = 'result/attack_result_embedding.pkl'
 
     # preparing data
     csv_header, orglist = api.parsed_list(ORIGINAL_FILE, header=True)
@@ -78,7 +82,7 @@ if __name__ == '__main__':
 
     attack_num_list = list()
     for i in range(0, MAX_ATTACK_RATE + STEP_ATTACK_RATE, STEP_ATTACK_RATE):
-        attack_num_list.append((len(orglist) * i) // 1000)
+        attack_num_list.append((len(orglist) * i) // MAX_ATTACK_RATE)
     attack_rate_list = list(
             range(0, MAX_ATTACK_RATE + STEP_ATTACK_RATE, STEP_ATTACK_RATE))
 
@@ -157,10 +161,15 @@ if __name__ == '__main__':
                 for i in range(TRIAL_NUM):
                     index_deleted, attacked_list =\
                             delete_attack(modlist, attack_num)
-                    detected_bin = detector(orglist, attacked_list,
-                                            MAX_BIN, meta_dict,
-                                            ATTR_LIST, group_by,
-                                            WATER_LEN, METHOD, model)
+
+                    try:
+                        detected_bin = detector(orglist, attacked_list,
+                                                MAX_BIN, meta_dict,
+                                                ATTR_LIST, group_by,
+                                                WATER_LEN, METHOD, model)
+                    except IndexError:
+                        detected_bin = '0' * WATER_LEN
+
                     bin_similarity = (sum([w == d for w, d
                                           in zip(watermarked_bin,
                                                  detected_bin)])
