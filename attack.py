@@ -64,7 +64,7 @@ if __name__ == '__main__':
     MAX_ATTACK_RATE = PERCENT
     STEP_ATTACK_RATE = 1
 
-    RESULT_PICKLE = 'result/attack_result_embedding.pkl'
+    RESULT_PICKLE = 'result/attack_result.pkl'
 
     # preparing data
     csv_header, orglist = api.parsed_list(ORIGINAL_FILE, header=True)
