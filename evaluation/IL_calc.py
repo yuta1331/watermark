@@ -155,6 +155,17 @@ class GeneralTree:
                     break
         return r
 
+    def hierarchy_num(self, value_l):
+        r = self.root
+        num = 0
+        for value in value_l[1:]:
+            for child in r.children:
+                if value == child.value:
+                    r = child
+                    num += 1
+                    break
+        return num
+
     def ncp(self, value_l):
         numerator = self.search(value_l).leaf_num
         # print('value: ', value_l)
@@ -171,6 +182,11 @@ class GeneralTree:
             ratio_sum += ratio
             r = r.children[ci]
         return ratio_sum
+
+    def general_IL(self, org_value_l, mod_value_l):
+        denominator = self.hierarchy_num(org_value_l)
+        numerator = denominator - self.hierarchy_num(mod_value_l)
+        return numerator / denominator
 
     def IL_inverse(self, org_value_l, mod_value_l):
         denominator = self.ratio_inverse(org_value_l)
@@ -231,6 +247,27 @@ def general_addrs(addr_attr, addr_l):
 
 
 class AddrTree(GeneralTree):
+    def extended_general_IL(self,
+                            org_addr,
+                            ano_addr,
+                            wat_addr,
+                            addr2formats,
+                            addr2geos,
+                            model):
+        general_org_addr = general_addr(addr_attr, org_addr)
+        general_ano_addr = general_addr(addr_attr, ano_addr)
+        general_wat_addr = general_addr(addr_attr, wat_addr)
+
+        if general_ano_addr == general_wat_addr:
+            return self.general_IL(general_org_addr, general_ano_addr)
+
+        denominator = self.hierarchy_num(general_org_addr)
+        numerator = (denominator
+                    - self.hierarchy_num(general_ano_addr)
+                    + loss(ano_addr, wat_addr, 'addr',
+                           addr2formats, addr2geos, model))
+        return numerator / denominator
+
     def extended_IL_inverse(self,
                             org_addr,
                             ano_addr,
@@ -319,12 +356,31 @@ def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos, model):
 
     IL_list = list()
 
-    IL_method = 'inverse'
+    IL_method = 'general_IL'
 
     if IL_method == 'NCP':
         # NCP
         for mod_addr in mod_general_addr_l:
             IL_list.append(addr_tree.ncp(mod_addr))
+    elif IL_method == 'general_IL':
+        if consts.MODE == 'proposal':
+            for org_addr, mod_addr, wat_addr in zip(org_addr_l,
+                                                    mod_addr_l,
+                                                    wat_addr_l):
+                IL_list.append(addr_tree\
+                               .extended_general_IL(org_addr,
+                                                    mod_addr,
+                                                    wat_addr,
+                                                    addr2formats,
+                                                    addr2geos,
+                                                    model))
+        elif consts.MODE == 'existing':
+            for org_addr, wat_addr in zip(org_addr_l, wat_addr_l):
+                general_org_addr = general_addr(addr_attr, org_addr)
+                general_wat_addr = general_addr(addr_attr, wat_addr)
+                IL_list.append(addr_tree.general_IL(general_org_addr,
+                                                    general_wat_addr))
+
     elif IL_method == 'inverse':
         # IL_inverse: extended
         if consts.MODE == 'proposal':

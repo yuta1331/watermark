@@ -23,7 +23,7 @@ INFILE = 'csvs/anonymized_data.csv'
 WATERMARK_PICKLE = 'pickles/watermarks.pkl'
 META_DICT_PICKLE = 'pickles/meta_dicts.pkl'
 METHOD = 'geo'
-MODE = 'existing'
+MODE = 'proposal'
 ATTR_LIST = ['sex', 'tel',
              'poscode', 'addr0', 'addr1', 'addr2', 'addr3', 'addr4',
              'birth', 'time']
@@ -37,10 +37,10 @@ IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
 TRIAL_NUM = 20
-IL_RESULT_PICKLE = 'result/IL_results_existing_500.pkl'
+IL_RESULT_PICKLE = 'result/IL_results_general_proposal_embedding_500.pkl'
 
 # for embedding
-IS_EMBEDDING = False
+IS_EMBEDDING = True
 MODEL = '../models/model1/model_50.bin'
 
 if WATERMARK_GEN is True:
