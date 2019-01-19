@@ -5,20 +5,23 @@ import api
 from watermark import detector
 from subset import embedding_operation
 from subset import turbo
+from subset import aes_ECB
 import consts
 
 import pickle
+import math
 
 ########### config ############
 
 ORIGIN_FILE = consts.ORIGIN_FILE
 MODIFIED_FILE = consts.MODIFIED_FILE
 META_DICT_PICKLE = consts.META_DICT_PICKLE
+AES_KEY_PICKLE = consts.AES_KEY_PICKLE
 METHOD = consts.METHOD
 ATTR_LIST = consts.ATTR_LIST
 SENSITIVE = consts.SENSITIVE
 GROUP_BY_ATTR = consts.GROUP_BY_ATTR
-WATER_LEN = consts.WATER_LEN
+WATER_BYTE = consts.WATER_BYTE
 MAX_BIN = consts.MAX_BIN
 
 ########### initial ############
@@ -27,6 +30,8 @@ _, modified_l = api.parsed_list(MODIFIED_FILE, header=True)
 
 with open(META_DICT_PICKLE, 'rb') as f:
     meta_dict = pickle.load(f)
+
+water_len = math.ceil((WATER_BYTE + 1) / 16) * 128
 
 # GROUP_BY_ATTRの番地
 group_by = [ATTR_LIST.index(attr) for attr in GROUP_BY_ATTR]
@@ -39,7 +44,7 @@ else:
 
 ########### detection ############
 detected_bin = detector(origin_l, modified_l, MAX_BIN, meta_dict,
-                        ATTR_LIST, group_by, WATER_LEN*2, METHOD, model)
+                        ATTR_LIST, group_by, water_len*2, METHOD, model)
 print(len(detected_bin))
 
 ########### turbo decoding ###########
@@ -54,21 +59,29 @@ if consts.IS_USED_AES:
 
 data, num_of_loop = turbo.decode(detected_data, detected_parity, 500, True)
 
-print('###### detected_bin ######')
+########### AES decryption ###########
+with open(AES_KEY_PICKLE, 'rb') as f:
+    aes_key = pickle.load(f)
+cipher = aes_ECB.AESCipher(aes_key)
+data = cipher.decrypt(data).decode('utf-8')
+
+print('###### detected_data ######')
 print(data)
 print('len: ', len(data))
 
 
 ########### check ###########
-WATERMARK_PICKLE = consts.WATERMARK_PICKLE
-with open(WATERMARK_PICKLE, 'rb') as f:
-    watermarked_bin = pickle.load(f)
-print('###### watermarked_bin ######')
-print(watermarked_bin)
-print('len: ', len(watermarked_bin))
+with open(consts.WATERMARK_PICKLE, 'rb') as f:
+    watermark = pickle.load(f)
+print('###### watermark ######')
+print(watermark)
+print('len: ', len(watermark))
 
-bin_similarity = (sum([w == d for w, d in zip(watermarked_bin, data)])
-                  / WATER_LEN
+encrypted_watermark = cipher.encrypt(watermark)
+encrypted_detected_data = cipher.encrypt(data)
+bin_similarity = (sum([w == d for w, d in zip(encrypted_watermark,
+                                              encrypted_detected_data)])
+                  / water_len
                   * 100)
 
 print('similarity of bin is {0} %'.format(bin_similarity))

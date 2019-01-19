@@ -5,9 +5,10 @@ import api
 from watermark import watermarker
 from subset import embedding_operation
 from subset import turbo
+from subset import aes_ECB
 import consts
 
-import random
+import random, string
 import pickle
 
 
@@ -17,27 +18,43 @@ INFILE = consts.ORIGIN_FILE
 OUTFILE = consts.MODIFIED_FILE
 WATERMARK_PICKLE = consts.WATERMARK_PICKLE
 META_DICT_PICKLE = consts.META_DICT_PICKLE
+AES_KEY_PICKLE = consts.AES_KEY_PICKLE
 METHOD = consts.METHOD
 ATTR_LIST = consts.ATTR_LIST
 SENSITIVE = consts.SENSITIVE
 GROUP_BY_ATTR = consts.GROUP_BY_ATTR
-WATER_LEN = consts.WATER_LEN
+WATER_BYTE = consts.WATER_BYTE
 MAX_BIN = consts.MAX_BIN
 
 WATERMARK_GEN = False
+AES_KEY_GEN = True
 IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
-if WATERMARK_GEN is True:
-    water_bin = ''.join([random.choice('01') for i in range(WATER_LEN)])
+# watermarkの準備
+if WATERMARK_GEN:
+    watermark = ''.join(random.choices(
+                            string.ascii_letters
+                            + string.digits, k=WATER_BYTE)
+                        )
     with open(WATERMARK_PICKLE, 'wb') as f:
-        pickle.dump(water_bin, f)
+        pickle.dump(watermark, f)
 else:
     with open(WATERMARK_PICKLE, 'rb') as f:
-        water_bin = pickle.load(f)
-# print(water_bin)
+        watermark = pickle.load(f)
+print(watermark)
 
-if IS_META_DICT_GENERATED is True:
+# AES key generate
+if AES_KEY_GEN:
+    aes_key = aes_ECB.generate_key()
+    with open(AES_KEY_PICKLE, 'wb') as f:
+        pickle.dump(aes_key, f)
+else:
+    with open(AES_KEY_PICKLE, 'rb') as f:
+        aes_key = pickle.load(f)
+
+# meta_dict
+if IS_META_DICT_GENERATED:
     with open(META_DICT_PICKLE) as f:
         meta_dict = pickle.load(f)
 else:
@@ -65,9 +82,15 @@ else:
     model = None
 
 ########### AES encryption ###########
+cipher = aes_ECB.AESCipher(aes_key)
+water_bin = cipher.encrypt(watermark)
+print('encrypted')
+print(water_bin)
 
 ########### turbo encoding ###########
 water_bin = water_bin + turbo.return_punctured_code(water_bin)
+print('encoded')
+print(water_bin)
 
 ########### watermark ############
 meta_dict = watermarker(datalist, water_bin, MAX_BIN, meta_dict,
@@ -90,7 +113,7 @@ for i, meta in enumerate(meta_dict.values()):
             embed_sum += embed_num
     if consts.MODE == 'existing':
         embed_sum += meta
-# print(embed_sum)
+print('embeded num: ', embed_sum)
 
 '''
 # 最後尾の要素がグループ内の要素数
