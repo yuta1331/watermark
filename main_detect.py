@@ -40,14 +40,17 @@ else:
 ########### detection ############
 detected_bin = detector(origin_l, modified_l, MAX_BIN, meta_dict,
                         ATTR_LIST, group_by, WATER_LEN*2, METHOD, model)
+print(len(detected_bin))
 
 ########### turbo decoding ###########
-detected_data = (detected_bin[:len(detected_bin)//2]
-                 + '0'*((128 - (len(detected_bin)//2)%128)%128))
+detected_data = detected_bin[:len(detected_bin)//2]
+detected_parity = detected_bin[len(detected_bin)//2:]
 
-detected_parity = (detected_bin[len(detected_bin)//2:]
-                   + '0'*((128 - (len(detected_bin)
-                   - len(detected_bin)//2)%128)%128))
+if consts.IS_USED_AES:
+    detected_data += '0'*((128 - (len(detected_bin)//2)%128)%128)
+
+    pad_num = (128 - (len(detected_bin) - len(detected_bin)//2)%128)%128
+    detected_parity += '0' *pad_num
 
 data, num_of_loop = turbo.decode(detected_data, detected_parity, 500, True)
 
