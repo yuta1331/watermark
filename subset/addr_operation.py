@@ -7,9 +7,6 @@ import copy
 from collections import OrderedDict
 
 from . import embedding_operation
-import sys
-sys.path.append('../')
-import consts
 
 
 def joined_addr(first, last, record):
@@ -166,7 +163,7 @@ def candidate_addr2geos(formatted_addr, addr2formats,
 
     cand_addr2geos = dict()
 
-    if consts.IS_EMBEDDING:
+    if model:
         addr_vec = model.get_word_vector(addr)
 
         for cand_addr in cand_addrs:
@@ -183,7 +180,7 @@ def candidate_addr2geos(formatted_addr, addr2formats,
 
     cand_addr2geos = OrderedDict(sorted(cand_addr2geos.items(),
                                         key=lambda x: x[1],
-                                        reverse=consts.IS_EMBEDDING))
+                                        reverse=bool(model)))
 
     cand_addr2geos.move_to_end(addr, False)
 

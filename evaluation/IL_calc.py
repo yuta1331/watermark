@@ -19,6 +19,7 @@ import numpy as np
 
 addr_attr = ['addr0', 'addr1', 'addr2', 'addr3', 'addr4']
 
+
 # categorical tree
 def loss(org_value, mod_value, attr, addr2formats, addr2geos, model):
     if org_value == mod_value:
@@ -31,7 +32,7 @@ def loss(org_value, mod_value, attr, addr2formats, addr2geos, model):
             print(''.join(org_value).strip('*'))
             print(''.join(mod_value).strip('*'))
         mod_addr = ''.join(mod_value).strip('*')
-        if consts.IS_EMBEDDING:
+        if model:
             d = 1 - cand_addr2geos[mod_addr]
             if d < 0:
                 d = 0
@@ -193,6 +194,17 @@ class GeneralTree:
         numerator = denominator - self.ratio_inverse(mod_value_l)
         return numerator / denominator
 
+    def IL_new(self, mod_value_l):
+        r = self.root
+        result = 1
+        for value in mod_value_l[1:]:
+            result /= len(r.children)
+            for child in r.children:
+                if value == child.value:
+                    r = child
+                    break
+        return result
+
     '''
     def extended_IL_inverse(self, 
                             org_value_l,
@@ -293,6 +305,25 @@ class AddrTree(GeneralTree):
 
         return numerator / denominator
 
+    def extended_IL_new(self, ano_addr, wat_addr):
+        general_ano_addr = general_addr(addr_attr, ano_addr)
+        general_wat_addr = general_addr(addr_attr, wat_addr)
+
+        r = self.root
+        result = 1
+        for i, value in enumerate(general_wat_addr[1:]):
+            for child in r.children:
+                if value == child.value:
+                    result /= len(r.children)
+
+                    # modified by watermarking
+                    if value != general_ano_addr[i+1]:
+                        result *= 2
+
+                    r = child
+                    break
+        return result
+
 
 def cast_sequential_num2int(dataset):
     for record in dataset:
@@ -316,7 +347,8 @@ def fix_addr(dataset, addr_first, addr_last):
     return addr_l
 
 
-def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos, model):
+def IL_calc(org_l, mod_l, wat_l, attr_list,
+            addr2formats, addr2geos, IL_mode, model):
     # sequential numberをintに
     cast_sequential_num2int(org_l)
     cast_sequential_num2int(mod_l)
@@ -356,13 +388,12 @@ def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos, model):
 
     IL_list = list()
 
-    IL_method = 'general_IL'
 
-    if IL_method == 'NCP':
+    if IL_mode == 'NCP':
         # NCP
         for mod_addr in mod_general_addr_l:
             IL_list.append(addr_tree.ncp(mod_addr))
-    elif IL_method == 'general_IL':
+    elif IL_mode == 'general':
         if consts.MODE == 'proposal':
             for org_addr, mod_addr, wat_addr in zip(org_addr_l,
                                                     mod_addr_l,
@@ -381,7 +412,7 @@ def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos, model):
                 IL_list.append(addr_tree.general_IL(general_org_addr,
                                                     general_wat_addr))
 
-    elif IL_method == 'inverse':
+    elif IL_mode == 'inverse':
         # IL_inverse: extended
         if consts.MODE == 'proposal':
             for org_addr, mod_addr, wat_addr in zip(org_addr_l,
@@ -402,6 +433,20 @@ def IL_calc(org_l, mod_l, wat_l, attr_list, addr2formats, addr2geos, model):
                 general_wat_addr = general_addr(addr_attr, wat_addr)
                 IL_list.append(addr_tree.IL_inverse(general_org_addr,
                                                     general_wat_addr))
+    elif IL_mode == 'new':
+        # extended
+        if consts.MODE == 'proposal':
+            for org_addr, mod_addr, wat_addr in zip(org_addr_l,
+                                                    mod_addr_l,
+                                                    wat_addr_l):
+                IL_list.append(addr_tree.extended_IL_new(mod_addr,
+                                                         wat_addr))
+
+        # not extended for existing method
+        elif consts.MODE == 'existing':
+            for wat_addr in wat_addr_l:
+                general_wat_addr = general_addr(addr_attr, wat_addr)
+                IL_list.append(addr_tree.IL_new(general_wat_addr))
 
     return IL_list, mod_addr_l
 
@@ -427,12 +472,17 @@ if __name__ == '__main__':
     local_addr2formats, local_addr2geos =\
         la2fg(attr_list, anonymized_list, addr2formats, addr2geos)
 
+    # IL_mode = 'NCP'
+    # IL_mode = 'general'
+    # IL_mode = 'inverse'
+    # IL_mode = 'new'
     IL_list, anonym_addr_l = IL_calc(org_list,
                                      anonymized_list,
                                      anonymized_list,
                                      attr_list,
                                      local_addr2formats,
                                      local_addr2geos,
+                                     IL_mode,
                                      model=None)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
@@ -444,6 +494,7 @@ if __name__ == '__main__':
                                      attr_list,
                                      local_addr2formats,
                                      local_addr2geos,
+                                     IL_mode,
                                      model=None)
     print('max: ', max(IL_list))
     print('min: ', min(IL_list))
