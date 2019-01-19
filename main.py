@@ -4,6 +4,7 @@
 import api
 from watermark import watermarker
 from subset import embedding_operation
+from subset import turbo
 import consts
 
 import random
@@ -62,6 +63,11 @@ if consts.IS_EMBEDDING:
     model = embedding_operation.load_model(consts.MODEL)
 else:
     model = None
+
+########### AES encryption ###########
+
+########### turbo encoding ###########
+water_bin = water_bin + turbo.return_punctured_code(water_bin)
 
 ########### watermark ############
 meta_dict = watermarker(datalist, water_bin, MAX_BIN, meta_dict,

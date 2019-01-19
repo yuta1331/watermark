@@ -4,6 +4,7 @@
 import api
 from watermark import detector
 from subset import embedding_operation
+from subset import turbo
 import consts
 
 import pickle
@@ -38,23 +39,33 @@ else:
 
 ########### detection ############
 detected_bin = detector(origin_l, modified_l, MAX_BIN, meta_dict,
-                        ATTR_LIST, group_by, WATER_LEN, METHOD, model)
+                        ATTR_LIST, group_by, WATER_LEN*2, METHOD, model)
 
-# print('###### detected_bin ######')
-# print(detected_bin)
-# print('len: ', len(detected_bin))
+########### turbo decoding ###########
+detected_data = (detected_bin[:len(detected_bin)//2]
+                 + '0'*((128 - (len(detected_bin)//2)%128)%128))
+
+detected_parity = (detected_bin[len(detected_bin)//2:]
+                   + '0'*((128 - (len(detected_bin)
+                   - len(detected_bin)//2)%128)%128))
+
+data, num_of_loop = turbo.decode(detected_data, detected_parity, 500, True)
+
+print('###### detected_bin ######')
+print(data)
+print('len: ', len(data))
 
 
 ########### check ###########
 WATERMARK_PICKLE = consts.WATERMARK_PICKLE
 with open(WATERMARK_PICKLE, 'rb') as f:
     watermarked_bin = pickle.load(f)
-# print('###### watermarked_bin ######')
-# print(watermarked_bin)
-# print('len: ', len(watermarked_bin))
+print('###### watermarked_bin ######')
+print(watermarked_bin)
+print('len: ', len(watermarked_bin))
 
-bin_similarity = sum([w == d for w, d in zip(watermarked_bin, detected_bin)])\
-                 / WATER_LEN\
-                 * 100
+bin_similarity = (sum([w == d for w, d in zip(watermarked_bin, data)])
+                  / WATER_LEN
+                  * 100)
 
-# print('similarity of bin is {0} %'.format(bin_similarity))
+print('similarity of bin is {0} %'.format(bin_similarity))
