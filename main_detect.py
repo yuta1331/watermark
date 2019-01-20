@@ -57,7 +57,7 @@ if consts.IS_USED_AES:
     pad_num = (128 - (len(detected_bin) - len(detected_bin)//2)%128)%128
     detected_parity += '0' *pad_num
 
-data, num_of_loop = turbo.decode(detected_data, detected_parity, 500, True)
+data, num_of_loop = turbo.decode(detected_data, detected_parity, 400, True)
 
 ########### AES decryption ###########
 with open(AES_KEY_PICKLE, 'rb') as f:
