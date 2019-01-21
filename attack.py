@@ -13,6 +13,7 @@ import random
 from copy import deepcopy
 from collections import OrderedDict
 import math
+import gmpy2
 
 import sys
 
@@ -59,6 +60,7 @@ if __name__ == '__main__':
     MAX_BIN = consts.MAX_BIN
 
     # test config
+    MAX_EXTRACTED_LEN = 600
     ATTACK_LIST = ['shuffle', 'add', 'del', 'replace', 'collusion']
     TRIAL_NUM = 20
 
@@ -69,7 +71,7 @@ if __name__ == '__main__':
 
     IS_ATTACK_PICKLE = True
 
-    RESULT_PICKLE = 'result/attack_result.pkl'
+    RESULT_PICKLE = 'result/attack_result_existing.pkl'
 
     # preparing data
     csv_header, orglist = api.parsed_list(consts.ORIGIN_FILE, header=True)
@@ -145,6 +147,10 @@ if __name__ == '__main__':
                                 MAX_BIN, meta_dict,
                                 ATTR_LIST, group_by,
                                 water_len*2, METHOD, model)
+
+        # デカくなりすぎるため
+        detected_bin = detected_bin[:MAX_EXTRACTED_LEN]
+
         detected_data = detected_bin[:len(detected_bin)//2]
         detected_parity = detected_bin[len(detected_bin)//2:]
 
@@ -154,7 +160,13 @@ if __name__ == '__main__':
             pad_num = (128 - (len(detected_bin) - len(detected_bin)//2)%128)%128
             detected_parity += '0' *pad_num
 
-        data, num_of_loop = turbo.decode(detected_data, detected_parity, 400, True)
+        if gmpy2.popcount(int(detected_data, 2)) == 0:
+            data = detected_data
+        else:
+            data, num_of_loop = turbo.decode(detected_data, detected_parity,
+                                             400, True)
+            if data == '':
+                data = detected_data
         bin_similarity = (sum([w == d for w, d in zip(watermark_bin,
                                                       data)])
                           / water_len

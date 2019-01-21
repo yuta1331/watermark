@@ -10,6 +10,7 @@ import consts
 
 import pickle
 import math
+import gmpy2
 
 ########### config ############
 
@@ -45,7 +46,7 @@ else:
 ########### detection ############
 detected_bin = detector(origin_l, modified_l, MAX_BIN, meta_dict,
                         ATTR_LIST, group_by, water_len*2, METHOD, model)
-print(len(detected_bin))
+detected_bin = detected_bin[:water_len*2]
 
 ########### turbo decoding ###########
 detected_data = detected_bin[:len(detected_bin)//2]
@@ -57,7 +58,12 @@ if consts.IS_USED_AES:
     pad_num = (128 - (len(detected_bin) - len(detected_bin)//2)%128)%128
     detected_parity += '0' *pad_num
 
-data, num_of_loop = turbo.decode(detected_data, detected_parity, 400, True)
+if gmpy2.popcount(int(detected_data, 2)) == 0:
+    data = detected_data
+else:
+    data, num_of_loop = turbo.decode(detected_data, detected_parity, 400, True)
+    if data == '':
+        data = detected_data
 
 ########### AES decryption ###########
 with open(AES_KEY_PICKLE, 'rb') as f:
