@@ -38,14 +38,15 @@ IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
 TRIAL_NUM = 20
-IL_RESULT_PICKLE = 'result/IL_inverse_results_existing_300.pkl'
+IL_RESULT_PICKLE = 'result/IL_general_geo_existing_300.pkl'
 # IL_MODE = 'NCP'
-# IL_MODE = 'general'
-IL_MODE = 'inverse'
+IL_MODE = 'general'
+# IL_MODE = 'inverse'
 # IL_MODE = 'new'
 
 # for embedding
-IS_EMBEDDING = False
+IS_EMBEDDING_IN_WATERMARK = False
+IS_EMBEDDING_IN_IL = False
 MODEL = '../models/model1/model_50.bin'
 
 if WATERMARK_GEN is True:
@@ -99,7 +100,13 @@ local_addr2formats, local_addr2geos =\
 # embedding mode
 # watermarkで使わないとしても，ILの計算で使う
 model = embedding_operation.load_model(MODEL)
-if IS_EMBEDDING:
+
+if IS_EMBEDDING_IN_IL:
+    model_for_IL = model
+else:
+    model_for_IL = None
+
+if IS_EMBEDDING_IN_WATERMARK:
     model_for_watermark = model
 else:
     model_for_watermark = None
@@ -115,7 +122,7 @@ IL_list, anonym_addr_l = IL_calc(org_list,
                                  local_addr2formats,
                                  local_addr2geos,
                                  IL_MODE,
-                                 model)
+                                 model_for_IL)
 IL = np.mean(IL_list)
 IL_dict[0] = [IL for i in range(TRIAL_NUM)]
 
@@ -167,7 +174,7 @@ for water_len in water_bins_dict.keys():
                                          local_addr2formats,
                                          local_addr2geos,
                                          IL_MODE,
-                                         model)
+                                         model_for_IL)
 
         IL_dict[water_len].append(np.mean(IL_list))
 
