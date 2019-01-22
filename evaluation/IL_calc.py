@@ -205,6 +205,12 @@ class GeneralTree:
                     break
         return result
 
+    def IL_tree(self, org_value_l, mod_value_l):
+        size_org_v = self.search(org_value_l).leaf_num
+        size_mod_v = self.search(mod_value_l).leaf_num
+        return (size_mod_v - size_org_v) / (self.root.leaf_num - size_org_v)
+
+
     '''
     def extended_IL_inverse(self, 
                             org_value_l,
@@ -323,6 +329,21 @@ class AddrTree(GeneralTree):
                     r = child
                     break
         return result
+
+    def extended_IL_tree(self, org_addr, ano_addr, wat_addr):
+        general_org_addr = general_addr(addr_attr, org_addr)
+        general_ano_addr = general_addr(addr_attr, ano_addr)
+        general_wat_addr = general_addr(addr_attr, wat_addr)
+        size_org_v = self.search(general_org_addr).leaf_num
+        size_ano_v = self.search(general_ano_addr).leaf_num
+
+        if ano_addr == wat_addr:
+            size_wat_v = 0
+        else:
+            size_wat_v = self.search(general_wat_addr).leaf_num
+
+        return ((size_ano_v + size_wat_v - size_org_v)
+                / (self.root.leaf_num - size_org_v))
 
 
 def cast_sequential_num2int(dataset):
@@ -448,6 +469,24 @@ def IL_calc(org_l, mod_l, wat_l, attr_list,
                 general_wat_addr = general_addr(addr_attr, wat_addr)
                 IL_list.append(addr_tree.IL_new(general_wat_addr))
 
+    elif IL_mode == 'tree':
+        # extended
+        if consts.MODE == 'proposal':
+            for org_addr, mod_addr, wat_addr in zip(org_addr_l,
+                                                    mod_addr_l,
+                                                    wat_addr_l):
+                IL_list.append(addr_tree.extended_IL_tree(org_addr,
+                                                          mod_addr,
+                                                          wat_addr))
+
+        # not extended for existing method
+        elif consts.MODE == 'existing':
+            for org_addr, wat_addr in zip(org_addr_l, wat_addr_l):
+                general_org_addr = general_addr(addr_attr, org_addr)
+                general_wat_addr = general_addr(addr_attr, wat_addr)
+                IL_list.append(addr_tree.IL_tree(general_org_addr,
+                                                 general_wat_addr))
+
     return IL_list, mod_addr_l
 
 
@@ -476,6 +515,7 @@ if __name__ == '__main__':
     # IL_mode = 'general'
     # IL_mode = 'inverse'
     # IL_mode = 'new'
+    IL_mode = 'tree'
     IL_list, anonym_addr_l = IL_calc(org_list,
                                      anonymized_list,
                                      anonymized_list,

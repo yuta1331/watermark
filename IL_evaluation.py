@@ -38,11 +38,12 @@ IS_ORIGIN_FILE_SORTED = True
 IS_META_DICT_GENERATED = False
 
 TRIAL_NUM = 20
-IL_RESULT_PICKLE = 'result/IL_general_geo_existing_300.pkl'
+IL_RESULT_PICKLE = 'result/IL_tree_existing_300.pkl'
 # IL_MODE = 'NCP'
-IL_MODE = 'general'
+# IL_MODE = 'general'
 # IL_MODE = 'inverse'
 # IL_MODE = 'new'
+IL_MODE = 'tree'
 
 # for embedding
 IS_EMBEDDING_IN_WATERMARK = False
