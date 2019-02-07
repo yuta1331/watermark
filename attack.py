@@ -62,16 +62,17 @@ if __name__ == '__main__':
     # test config
     MAX_EXTRACTED_LEN = 600
     ATTACK_LIST = ['shuffle', 'add', 'del', 'replace', 'collusion']
-    TRIAL_NUM = 20
+    TRIAL_NUM = 50
 
     PERCENT = 100
     PERMILLE = 1000
-    MAX_ATTACK_RATE = PERCENT
+    MAX_ATTACK_RATE = 40
+    PER = PERCENT
     STEP_ATTACK_RATE = 5
 
     IS_ATTACK_PICKLE = True
 
-    RESULT_PICKLE = 'result/attack_result_existing.pkl'
+    RESULT_PICKLE = 'result/attack_result_embedding_50.pkl'
 
     # preparing data
     csv_header, orglist = api.parsed_list(consts.ORIGIN_FILE, header=True)
@@ -97,7 +98,7 @@ if __name__ == '__main__':
     attack_rate_list = list(
             range(0, MAX_ATTACK_RATE + STEP_ATTACK_RATE, STEP_ATTACK_RATE))
 
-    attack_num_list = [(len(orglist) * i) // MAX_ATTACK_RATE
+    attack_num_list = [(len(orglist) * i) // PER
                        for i in attack_rate_list]
 
     ## prepare attack indexes
@@ -123,16 +124,16 @@ if __name__ == '__main__':
         return index_dict
 
     ### addition attack
-    index_adds_list_dict = index_('pickles/index_adds.pkl', is_dx=True)
+    index_adds_list_dict = index_('pickles/index_adds_50.pkl', is_dx=True)
 
     ### deletion attack
-    index_dels_list_dict = index_('pickles/index_dels.pkl', is_dx=False)
+    index_dels_list_dict = index_('pickles/index_dels_50.pkl', is_dx=False)
 
     ### replacement attack
     #### 置換先
-    index_replaces_list_dict = index_('pickles/index_replaces.pkl', is_dx=False)
+    index_replaces_list_dict = index_('pickles/index_replaces_50.pkl', is_dx=False)
     #### 置換元
-    index_copieds_list_dict = index_('pickles/index_copieds.pkl', is_dx=True)
+    index_copieds_list_dict = index_('pickles/index_copieds_50.pkl', is_dx=True)
 
 
     ## embedding mode

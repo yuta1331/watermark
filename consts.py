@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # comparison method
-MODE = 'proposal'
-# MODE = 'existing'
+# MODE = 'proposal'
+MODE = 'existing'
 
 # files
 ORIGIN_FILE = 'csvs/anonymized_data.csv'
@@ -28,7 +28,7 @@ GROUP_BY_ATTR = ['time', 'tel', 'sex']  # これを元にグループ化
 
 # 今はrandomな2進数を生成
 WATER_BYTE = 31  # *8 = bit length in using ascii
-WATER_LEN = 300
+WATER_LEN = 128
 MAX_BIN = 3  # 各値につき最大の埋め込みビット
 
 # sub methods
